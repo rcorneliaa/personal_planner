@@ -33,9 +33,9 @@ class TodoScreen(BoxLayout):
         content = BoxLayout(orientation = 'vertical', spacing=10, padding=10)
         
         input_title = TextInput(hint_text = "Task Title", multiline = False)
-        input_desc = TextInput(hint_text="Descriere (opțional)", multiline=True, size_hint_y=None, height=80)
+        input_desc = TextInput(hint_text="Description", multiline=True, size_hint_y=None, height=80)
         priority_spinner = Spinner(
-        text="medium",
+        text="select priority",
         values=["low", "medium", "high"],
         size_hint_y=None,
         height=40
@@ -90,12 +90,12 @@ class TodoScreen(BoxLayout):
     def show_task_details(self, task):
         content = BoxLayout(orientation='vertical', spacing=10, padding=10)
 
-        title_label = Label(text=f"Titlu: {task.title}", size_hint_y=None, height=30)
-        desc_label = Label(text=f"Descriere: {task.description or '-'}", size_hint_y=None, height=30)
-        status_label = Label(text=f"Status: {task.status}", size_hint_y=None, height=30)
+        title_label = Label(text=f"{task.title}", size_hint_y=None, height=30)
+        desc_label = Label(text=f"{task.description or '-'}", size_hint_y=None, height=30)
+        status_label = Label(text=f"{task.status}", size_hint_y=None, height=30)
 
-        mark_done_btn = Button(text="Marchează ca finalizat", size_hint_y=None, height=40)
-        close_btn = Button(text="Închide", size_hint_y=None, height=40)
+        mark_done_btn = Button(text="Done", size_hint_y=None, height=40)
+        close_btn = Button(text="Cancel", size_hint_y=None, height=40)
 
         btns = BoxLayout(size_hint_y=None, height=40)
         btns.add_widget(mark_done_btn)
@@ -106,7 +106,7 @@ class TodoScreen(BoxLayout):
         content.add_widget(status_label)
         content.add_widget(btns)
 
-        popup = Popup(title="Detalii Task", content=content, size_hint=(0.85, 0.5))
+        popup = Popup(title="Details", content=content, size_hint=(0.85, 0.5))
 
         mark_done_btn.bind(on_release=lambda x: self.mark_task_done(task.id, popup))
         close_btn.bind(on_release=popup.dismiss)
