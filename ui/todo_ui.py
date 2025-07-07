@@ -1,69 +1,80 @@
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.textinput import TextInput
-from kivy.uix.popup import Popup
-from kivy.uix.spinner import Spinner
+from kivymd.app import MDApp
+from kivy.uix.screenmanager import SlideTransition
+from kivymd.uix.screen import MDScreen
+from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.scrollview import MDScrollView
+from kivymd.uix.list import MDList, OneLineListItem
+from kivymd.uix.list import TwoLineListItem
+from kivymd.uix.toolbar import MDTopAppBar 
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.button import (
+    MDButton,
+    MDButtonIcon,
+    MDButtonText,
+    MDIconButton,
+)
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.pickers.datepicker import MDDatePicker
 
 
-class TodoScreen(BoxLayout):
+class TodoScreen(MDScreen):
     def __init__(self, db_manager, **kwargs):
-        super().__init__(orientation = 'vertical', **kwargs)
+        super().__init__(**kwargs)
         self.db = db_manager
+        self.selected_date = None
 
-        #TASK ZONE
-        self.task_list = GridLayout(cols = 1, size_hint_y = None)
-        self.task_list.bind(minimum_height = self.task_list.setter('height'))
+        main_layout = MDBoxLayout(orientation='vertical')
+        top_bar = MDTopAppBar(
+            title="To-Do List",
+            left_action_items=[["arrow-left", lambda x: self.go_back()]],
+            elevation=10
+        )
+        main_layout.add_widget(top_bar)
 
-        #SCROLLVIEW
-        self.scroll  = ScrollView()
+        # Buton selectat dată
+        self.date_btn = MDButton(
+            text="Choose Day",
+            size_hint=(None, None),
+            style="elevated",
+            size=(150, 40),
+            pos_hint={"center_x": 0.5},
+            on_release=self.show_date_picker
+        )
+        main_layout.add_widget(self.date_btn)
+
+
+        self.scroll = MDScrollView()
+        self.task_list = MDList()
         self.scroll.add_widget(self.task_list)
-        self.add_widget(self.scroll)
+        main_layout.add_widget(self.scroll)
 
-        #ADD BUTTON
-        add_button = Button(text = "Add Task", size_hint_y = None, height = 40)
-        self.add_widget(add_button)
-        add_button.bind(on_release=self.show_add_task_popup)
+        self.add_btn = MDButton(
+            MDButtonIcon(icon="plus"),
+            MDButtonText(text="Add Task"),
+            style="elevated",
+            pos_hint={"right": 0.97, "y": 0.02},
+            size_hint=(None, None),
+            height="48dp",
+            padding=("12dp", "10dp", "12dp", "10dp"),
+            on_release=self.show_add_task_dialog
+        )
+        self.add_btn.bind(on_release=self.show_add_task_dialog)
+        main_layout.add_widget(self.add_btn)
+        
+        self.add_widget(main_layout)
+
         self.refresh_tasks()
 
-    
-    def show_add_task_popup(self, instance):
-        content = BoxLayout(orientation = 'vertical', spacing=10, padding=10)
-        
-        input_title = TextInput(hint_text = "Task Title", multiline = False)
-        input_desc = TextInput(hint_text="Description", multiline=True, size_hint_y=None, height=80)
-        priority_spinner = Spinner(
-        text="select priority",
-        values=["low", "medium", "high"],
-        size_hint_y=None,
-        height=40
-    )
+    def show_date_picker(self, *args):
+        date_dialog = MDDatePicker()
+        date_dialog.bind(on_save=self.on_date_selected)
+        date_dialog.open()
 
-        btn_add = Button(text = "Add")
-        btn_cancel = Button(text = "Cancel")
 
-        btn_layout = BoxLayout(size_hint_y = None, height = 20)
-        btn_layout.add_widget(btn_add)
-        btn_layout.add_widget(btn_cancel)
-
-        content.add_widget(input_title)
-        content.add_widget(input_desc)
-        content.add_widget(priority_spinner)
-        content.add_widget(btn_layout)
-
-        popup = Popup(title = "Add task", content = content, size_hint = (0.8, 0.4))
-
-        btn_add.bind(on_release=lambda x: self.add_task(
-        input_title.text,
-        input_desc.text,
-        priority_spinner.text,
-        popup
-        ))
-        btn_cancel.bind(on_release=popup.dismiss)
-
-        popup.open()
+    def on_date_selected(self, instance, value, date_range):
+        self.selected_date = str(value)
+        self.date_btn.text = f"Ziua: {self.selected_date}"
+        self.refresh_tasks()
 
     
     def add_task(self, title, description, priority, popup):
@@ -75,48 +86,62 @@ class TodoScreen(BoxLayout):
 
     def refresh_tasks(self):
         self.task_list.clear_widgets()
-
-        tasks = self.db.get_tasks()
+        if not self.selected_date:
+            return
+        tasks = self.db.get_tasks_by_date(self.selected_date)
         for task in tasks:
-            btn = Button(
-            text=str(task),
-            size_hint_y=None,
-            height=40
-        )
-            btn.bind(on_release=lambda _, t=task: self.show_task_details(t))
-            self.task_list.add_widget(btn)
+            self.task_list.add_widget(
+                OneLineListItem(text=f"{task.title} [{task.priority}]")
+            )
+
         
+    def show_add_task_dialog(self, *args):
+        if not self.selected_date:
+            self.date_btn.text = "Alege mai întâi o zi!"
+            return
+        
+        self.dialog = MDDialog(
+            title="Adaugă task",
+            type="custom",
+            content_cls=MDBoxLayout(
+                MDTextField(hint_text="Titlu task", id="title"),
+                MDTextField(hint_text="Descriere", id="desc"),
+                MDTextField(hint_text="Prioritate (ex: low, medium, high)", id="priority"),
+                orientation="vertical",
+                spacing=10,
+                size_hint_y=None,
+                height="150dp",
+            ),
+            buttons=[
+                MDButton(text="Anulează", on_release=lambda x: self.dialog.dismiss()),
+                MDButton(text="Adaugă", on_release=self.add_task)
+            ]
+        )
+        self.dialog.open()
 
-    def show_task_details(self, task):
-        content = BoxLayout(orientation='vertical', spacing=10, padding=10)
+    def add_task(self, *args):
+        title = self.dialog.content_cls.ids.title.text
+        description = self.dialog.content_cls.ids.desc.text
+        priority = self.dialog.content_cls.ids.priority.text or "medium"
+        
+        if not title.strip():
+            return  
+        
+        self.db.add_task(title=title.strip(), description=description.strip(), deadline=self.selected_date, priority=priority)
+        self.dialog.dismiss()
+        self.refresh_tasks()
 
-        title_label = Label(text=f"{task.title}", size_hint_y=None, height=30)
-        desc_label = Label(text=f"{task.description or '-'}", size_hint_y=None, height=30)
-        status_label = Label(text=f"{task.status}", size_hint_y=None, height=30)
-
-        mark_done_btn = Button(text="Done", size_hint_y=None, height=40)
-        close_btn = Button(text="Cancel", size_hint_y=None, height=40)
-
-        btns = BoxLayout(size_hint_y=None, height=40)
-        btns.add_widget(mark_done_btn)
-        btns.add_widget(close_btn)
-
-        content.add_widget(title_label)
-        content.add_widget(desc_label)
-        content.add_widget(status_label)
-        content.add_widget(btns)
-
-        popup = Popup(title="Details", content=content, size_hint=(0.85, 0.5))
-
-        mark_done_btn.bind(on_release=lambda x: self.mark_task_done(task.id, popup))
-        close_btn.bind(on_release=popup.dismiss)
-
-        popup.open()
 
     def mark_task_done(self, task_id, popup):
         self.db.mark_task_done(task_id)
         popup.dismiss()
         self.refresh_tasks()
+
+
+    def go_back(self):
+        app = MDApp.get_running_app()
+        app.sm.transition = SlideTransition(direction='right')
+        app.sm.current = "start"
 
 
 

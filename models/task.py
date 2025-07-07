@@ -1,9 +1,9 @@
 class Task:
-    def __init__(self, id, title, description = None, deadline = None, priority = "medium", status ="in progres"):
+    def __init__(self, id, title, description, date , priority = "medium", status ="in progres"):
         self.id = id
         self.title = title
         self.description = description
-        self.deadline = deadline
+        self.date = date
         self.priority = priority
         self.status = status
 

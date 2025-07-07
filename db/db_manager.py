@@ -13,7 +13,7 @@ class DatabaseManager:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
                 description TEXT,
-                deadline TEXT,
+                date TEXT NOT NULL,
                 priority TEXT,
                 status TEXT DEFAULT 'in progress'
                  
@@ -24,18 +24,19 @@ class DatabaseManager:
 
     def add_task(self, title, description, deadline = None, priority = 'medium'):
         self.conn.execute("""
-            INSERT INTO tasks (title, description, deadline, priority)
+            INSERT INTO tasks (title, description, date, priority)
             VALUES(?, ?, ?, ?)
         """, (title, description, deadline, priority))
         self.conn.commit()
 
     
-    def get_tasks(self):
+    def get_tasks_by_date(self, date):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT * FROM tasks")
-        
+        if date:
+          cursor.execute("SELECT * FROM tasks WHERE date = ?", (date,))
+        else:
+          cursor.execute("SELECT * FROM tasks")
         rows = cursor.fetchall()
-        print(f"TASKS IN DB: {len(rows)}") 
         return [Task(**row) for row in rows]
     
 
