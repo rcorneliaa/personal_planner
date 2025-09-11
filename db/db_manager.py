@@ -12,9 +12,7 @@ class DatabaseManager:
             CREATE TABLE IF NOT EXISTS tasks(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
-                description TEXT,
                 date TEXT NOT NULL,
-                priority TEXT,
                 status TEXT DEFAULT 'in progress'
                  
                 )
@@ -22,11 +20,11 @@ class DatabaseManager:
         self.conn.commit()
 
 
-    def add_task(self, title, description, deadline = None, priority = 'medium'):
+    def add_task(self, title, deadline = None):
         self.conn.execute("""
-            INSERT INTO tasks (title, description, date, priority)
-            VALUES(?, ?, ?, ?)
-        """, (title, description, deadline, priority))
+            INSERT INTO tasks (title, date)
+            VALUES(?, ?)
+        """, (title, deadline))
         self.conn.commit()
 
     

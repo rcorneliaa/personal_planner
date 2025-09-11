@@ -7,7 +7,7 @@ from ui.main_window import StartScreen
 class PersonalPlannerApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Light"  # sau "Dark"
-        self.theme_cls.primary_palette = "BlueGray"
+        self.theme_cls.primary_palette = "DeepPurple"
 
         self.db = DatabaseManager()
         self.db.initialize_database()
