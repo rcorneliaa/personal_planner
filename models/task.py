@@ -11,5 +11,5 @@ class Task:
     
 
     def __str__(self):
-        return f"[{self.priority.upper()}] {self.title} - {self.status.upper()}"
+        return f"{self.title} - {self.status.upper()}"
         

@@ -3,6 +3,8 @@ from kivy.uix.screenmanager import ScreenManager
 from ui.todo_ui import TodoScreen
 from db.db_manager import DatabaseManager
 from ui.main_window import StartScreen
+from ui.vacations.vacation_ui import VacationsScreen
+
 
 class PersonalPlannerApp(MDApp):
     def build(self):
@@ -16,6 +18,9 @@ class PersonalPlannerApp(MDApp):
 
         self.sm.add_widget(StartScreen(name="start"))
         self.sm.add_widget(TodoScreen(self.db, name="todo"))
+        self.sm.add_widget(VacationsScreen(self.db, name = "vacations"))
+    
+       
 
         return self.sm
 

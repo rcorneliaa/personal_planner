@@ -1,0 +1,14 @@
+{
+  "Italia": [
+    {
+      "city": "Roma",
+      "picture": "images/colosseum.jpg",
+      "maps_link": "https://www.google.com/maps/place/Rome"
+    },
+    {
+      "city": "Veneția",
+      "picture": "images/venice.jpg",
+      "maps_link": "https://www.google.com/maps/place/Venice"
+    }
+  ]
+}
