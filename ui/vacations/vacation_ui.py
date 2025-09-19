@@ -14,12 +14,21 @@ from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRectangleFlatButton
 from kivymd.uix.menu import MDDropdownMenu
-
+from kivy.uix.gridlayout import GridLayout
+from kivymd.uix.card import MDCard
+from kivy.uix.image import Image
+import json
+from kivy.metrics import dp
+from kivymd.toast import toast
+import os
 
 class VacationsScreen(MDScreen):
     def __init__(self, db_manager, **kwargs):
         super().__init__(**kwargs)
         self.db = db_manager
+
+        with open(r"utils\destinations.json", "r", encoding= "utf-8") as file:
+            self.destination_data = json.load(file)
 
 
         #Prima pagina
@@ -32,6 +41,17 @@ class VacationsScreen(MDScreen):
             
         )
         main_layout.add_widget(top_bar)
+
+        self.scroll = MDScrollView()
+        self.vacation_list = GridLayout(
+        cols=2,
+        spacing=10,
+        size_hint_y=None
+        )
+        self.vacation_list.bind(minimum_height=self.vacation_list.setter('height'))
+        self.scroll.add_widget(self.vacation_list)
+        main_layout.add_widget(self.scroll)
+
 
         #Adaugare vacanta noua
         self.add_vacation_btn = MDRaisedButton(
@@ -47,6 +67,7 @@ class VacationsScreen(MDScreen):
         main_layout.add_widget(self.add_vacation_btn)
 
         self.add_widget(main_layout)
+        self.refresh_vacations()
 
 
     def go_back(self):
@@ -56,11 +77,13 @@ class VacationsScreen(MDScreen):
 
     
     def show_details_dialog(self, *args):
-        content = MDBoxLayout(orientation="vertical",
-    spacing=20,
-    padding=(20, 60, 20, 20),  
-    size_hint_y=None,
-    height=250)
+        content = MDBoxLayout(
+            orientation="vertical",
+            spacing=20,
+            padding=(20, 60, 20, 20),  
+            size_hint_y=None,
+            height=250
+            )
 
         self.start_btn = MDRectangleFlatButton(text = "Choose start date...")
         self.start_btn.bind(on_release = self.show_start_date_picker)
@@ -70,9 +93,9 @@ class VacationsScreen(MDScreen):
         self.end_btn.bind(on_release = self.show_end_date_picker)
         content.add_widget(self.end_btn)
 
-        # self.country_btn = MDRectangleFlatButton(text="Choose country/city...")
-        # self.country_btn.bind(on_release=self.open_country_menu)
-        # content.add_widget(self.country_btn)
+        self.country_btn = MDRectangleFlatButton(text="Choose country/city...")
+        self.country_btn.bind(on_release=self.open_country_menu)
+        content.add_widget(self.country_btn)
 
 
         self.dialog = MDDialog(
@@ -81,7 +104,7 @@ class VacationsScreen(MDScreen):
             content_cls = content,
             buttons=[
                 MDRaisedButton(text="Cancel", on_release=lambda x: self.dialog.dismiss()),
-                #MDRaisedButton(text="Add", on_release=self.save_vacation)
+                MDRaisedButton(text="Save", on_release=self.add_vacation)
             ]
 
         )
@@ -101,7 +124,7 @@ class VacationsScreen(MDScreen):
         self.start_btn.text = str(value)
 
 
-    def show_end_date_picker(self, instasnce):
+    def show_end_date_picker(self, *args):
         date_dialog = MDDatePicker(
             title = "End date"
         )
@@ -111,13 +134,120 @@ class VacationsScreen(MDScreen):
 
     def set_end_date(self, instance, value, data_range):
         if value < self.start_date:
-            from kivymd.toast import toast
+            
             toast("End date must be after start date!", [0.2, 0.2, 0.2, 0.5], 1)
             from kivy.clock import Clock
             Clock.schedule_once(lambda dt: self.show_end_date_picker(), 1)
         else:
             self.end_date = value
             self.end_btn.text = str(value)
+
+    def open_country_menu(self, instance):
+        menu_items = [
+            {"text": country,
+             "viewclass": "OneLineListItem",
+             "on_release": lambda x = country: self.select_country(x)
+             } for country in self.destination_data.keys()  
+        ]
+
+        self.country_menu = MDDropdownMenu(
+            caller = instance,
+            items = menu_items,
+            width_mult = 4
+        )
+
+        self.country_menu.open()
+
+    def select_country(self, country):
+        self.selected_country = country
+        self.country_menu.dismiss()
+        self.open_city_menu(country)
+
+    def open_city_menu(self, country):
+        city_items = [
+            {"text": city["city"],
+             "viewclass": "OneLineListItem",
+             "on_release": lambda x = city["city"]: self.select_city(x)
+             }for city in self.destination_data[country]
+        ]
+
+        self.city_menu = MDDropdownMenu(
+            caller = self.country_btn,
+            items = city_items,
+            width_mult = 4
+        )
+
+        self.city_menu.open()
+
+    def select_city(self, city):
+        self.selected_city = city
+        self.country_btn.text = f"{self.selected_country}, {city}"
+        self.city_menu.dismiss()
+
+
+
+    
+    def add_vacation(self, *args):
+        if not hasattr(self, "start_date") or not hasattr(self, "end_date"):
+            toast("Please select both start and end dates!", [0.2, 0.2, 0.2, 0.5], 1)
+            return
+        if not hasattr(self, "selected_country") or not hasattr(self, "selected_city"):
+            toast("Please select a country and a city!", [0.2, 0.2, 0.2, 0.5], 1)
+            return
+        
+        self.db.add_vacation(
+            destination = f"{self.selected_country}, {self.selected_city}",
+            start_date = str(self.start_date),
+            end_date = str(self.end_date)
+        )
+        self.dialog.dismiss()
+        self.refresh_vacations()
+
+
+    def refresh_vacations(self):
+        self.vacation_list.clear_widgets()
+
+        vacations = self.db.get_vacations()
+        for vac in vacations:
+            country, city = vac.destination.split(", ")
+            picture = " "
+            BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils")
+            if country in self.destination_data:
+                for c in self.destination_data[country]:
+                    if c["city"] == city:
+                        picture = c.get("picture", "")
+                        if picture:
+                            picture_path = os.path.join(BASE_DIR, picture)
+                        break
+            card = MDCard(
+                orientation = "vertical",
+                size_hint = (None, None),
+                size = (dp(280), dp(300)),
+                padding = 10,
+                ripple_behavior = True
+                
+
+            )
+
+            if picture_path and os.path.exists(picture_path):
+                img = Image(source=picture_path, size_hint=(None, None), height=dp(140))
+                card.add_widget(img)
+            
+            # eticheta cu țară și oraș
+            destination = vac.destination
+            label = MDLabel(
+                text=destination,
+                halign="center",
+                size_hint=(1, None),
+                height=dp(40)
+            )
+            card.add_widget(label)
+            
+            # adăugăm cardul în grid
+            self.vacation_list.add_widget(card)
+
+
+
 
 
 
