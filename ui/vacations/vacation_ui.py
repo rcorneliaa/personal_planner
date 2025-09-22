@@ -17,6 +17,9 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivy.uix.gridlayout import GridLayout
 from kivymd.uix.card import MDCard
 from kivy.uix.image import Image
+from utils.helper import load_resized_image
+from utils.helper import ClickCard
+
 import json
 from kivy.metrics import dp
 from kivymd.toast import toast
@@ -37,7 +40,8 @@ class VacationsScreen(MDScreen):
             title = "My Vacations",
             left_action_items = [["arrow-left", lambda x: self.go_back()]],
             elevation = 10,
-            pos_hint = {"top": 1}
+            pos_hint = {"top": 1},
+            type = "top"
             
         )
         main_layout.add_widget(top_bar)
@@ -46,6 +50,7 @@ class VacationsScreen(MDScreen):
         self.vacation_list = GridLayout(
         cols=2,
         spacing=10,
+        padding=[0, 20, 0, 0],
         size_hint_y=None
         )
         self.vacation_list.bind(minimum_height=self.vacation_list.setter('height'))
@@ -210,27 +215,28 @@ class VacationsScreen(MDScreen):
         vacations = self.db.get_vacations()
         for vac in vacations:
             country, city = vac.destination.split(", ")
-            picture = " "
-            BASE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "utils")
+            picture_path = ""
+            BASE_DIR = os.path.dirname(os.path.abspath(__file__))
             if country in self.destination_data:
                 for c in self.destination_data[country]:
                     if c["city"] == city:
                         picture = c.get("picture", "")
                         if picture:
                             picture_path = os.path.join(BASE_DIR, picture)
+                            print("Calea imaginii:", picture_path)
                         break
-            card = MDCard(
+            card = ClickCard(
                 orientation = "vertical",
                 size_hint = (None, None),
-                size = (dp(280), dp(300)),
-                padding = 10,
-                ripple_behavior = True
-                
-
+                size=(dp(400), dp(300)),
+                elevation = 1,
+                padding = 20,
+            
             )
 
             if picture_path and os.path.exists(picture_path):
-                img = Image(source=picture_path, size_hint=(None, None), height=dp(140))
+                texture = load_resized_image(picture_path, 400, 300)
+                img = Image(texture = texture, size_hint=(1, None), height=dp(240), allow_stretch = True, keep_ratio = True)
                 card.add_widget(img)
             
             # eticheta cu țară și oraș
@@ -240,11 +246,18 @@ class VacationsScreen(MDScreen):
                 halign="center",
                 size_hint=(1, None),
                 height=dp(40)
+                
+        
             )
             card.add_widget(label)
-            
-            # adăugăm cardul în grid
+            card.go_to_detail = lambda vac=vac: self.go_to_vacation_detail(vac)
             self.vacation_list.add_widget(card)
+    
+    def go_to_vacation_detail(self, vacation):
+        app = MDApp.get_running_app()
+        app.sm.transition = SlideTransition(direction='left')
+        app.sm.current = "vacation_details"
+ 
 
 
 

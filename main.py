@@ -4,6 +4,7 @@ from ui.todo_ui import TodoScreen
 from db.db_manager import DatabaseManager
 from ui.main_window import StartScreen
 from ui.vacations.vacation_ui import VacationsScreen
+from ui.vacations.vacation_details_ui import VacationDetailScreen
 
 
 class PersonalPlannerApp(MDApp):
@@ -19,6 +20,7 @@ class PersonalPlannerApp(MDApp):
         self.sm.add_widget(StartScreen(name="start"))
         self.sm.add_widget(TodoScreen(self.db, name="todo"))
         self.sm.add_widget(VacationsScreen(self.db, name = "vacations"))
+        self.sm.add_widget(VacationDetailScreen(self.db, name ="vacation_details"))
     
        
 

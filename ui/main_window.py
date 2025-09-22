@@ -22,13 +22,13 @@ class StartScreen(MDScreen):
 
         todo_button = MDRaisedButton(
             text="To-Do Lists",
-            pos_hint={"center_x": 0.2},
+            pos_hint={"center_x": 0.2, "center_y": 0.5},
             on_release=self.go_to_todo
         )
         
         vacation_planer_button = MDRaisedButton(
             text = "My Vacations",
-            pos_hint = {"center_x": 0.5},
+            pos_hint = {"center_x": 0.5, "center_y": 0.5},
             on_release = self.go_vacations
 
         )
