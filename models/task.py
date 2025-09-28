@@ -6,7 +6,7 @@ class Task:
         self.status = status
 
     
-    def is_dne(self):
+    def is_done(self):
         return self.status == "done"
     
 

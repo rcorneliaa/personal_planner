@@ -10,5 +10,17 @@
       "picture": "images/venice.jpg",
       "maps_link": "https://www.google.com/maps/place/Venice"
     }
+  ],
+  "England": [
+    {
+      "city": "London",
+      "picture": "images/colosseum.jpg",
+      "maps_link": "https://www.google.com/maps/place/Rome"
+    },
+    {
+      "city": "Oxford",
+      "picture": "images/venice.jpg",
+      "maps_link": "https://www.google.com/maps/place/Venice"
+    }
   ]
 }

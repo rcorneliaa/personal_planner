@@ -19,7 +19,6 @@ from kivymd.uix.card import MDCard
 from kivy.uix.image import Image
 from utils.helper import load_resized_image
 from utils.helper import ClickCard
-
 import json
 from kivy.metrics import dp
 from kivymd.toast import toast
@@ -226,6 +225,7 @@ class VacationsScreen(MDScreen):
                             print("Calea imaginii:", picture_path)
                         break
             card = ClickCard(
+                vacation= vac,
                 orientation = "vertical",
                 size_hint = (None, None),
                 size=(dp(400), dp(300)),
@@ -250,13 +250,15 @@ class VacationsScreen(MDScreen):
         
             )
             card.add_widget(label)
-            card.go_to_detail = lambda vac=vac: self.go_to_vacation_detail(vac)
+            # card.go_to_detail = lambda vac=vac: self.go_to_vacation_detail(vac)
             self.vacation_list.add_widget(card)
     
-    def go_to_vacation_detail(self, vacation):
-        app = MDApp.get_running_app()
-        app.sm.transition = SlideTransition(direction='left')
-        app.sm.current = "vacation_details"
+    # def go_to_vacation_detail(self, vacation):
+    #     app = MDApp.get_running_app()
+    #     detail_screen = app.sm.get_screen("vacation_details")
+    #     detail_screen.set_vacation(vacation) 
+    #     app.sm.transition = SlideTransition(direction='left')
+    #     app.sm.current = "vacation_details"
  
 
 
