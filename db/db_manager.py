@@ -18,6 +18,8 @@ class DatabaseManager:
                  
                 )
           """)
+        
+
         self.conn.execute("""
             CREATE TABLE IF NOT EXISTS vacations(
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +29,24 @@ class DatabaseManager:
                  
                 )
           """)
+        
+        self.conn.execute("""
+            CREATE TABLE IF NOT EXISTS itineraries(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                vacation_id INTEGER,
+                day DATE,
+                start_time TIME,
+                end_time TIME,     
+                activity TEXT,
+                location TEXT,
+                notest TEXT NULL,
+                FOREIGN KEY (vacation_id) REFERENCES vacations(id)                                               
+                 
+                )
+          """)
         self.conn.commit()
+
+    ########################################## METHODS FOR TASKS MANAGEMENT ###########################################
 
     def add_task(self, title, deadline = None):
         self.conn.execute("""
@@ -54,6 +73,9 @@ class DatabaseManager:
         )
         self.conn.commit()
 
+
+     ########################################## METHODS FOR VACATIONS MANAGEMENT ###########################################
+
     def add_vacation(self, destination, start_date, end_date):
         self.conn.execute("""
                 INSERT INTO vacations(destination, start_date, end_date) VALUES (?, ?, ?)
@@ -65,5 +87,16 @@ class DatabaseManager:
         cursor.execute("SELECT * FROM vacations")
         rows = cursor.fetchall()
         return [Vacation(**row) for row in rows]
+    
 
+
+    ########################################## METHODS FOR ITINERARY MANAGEMENT ###########################################
+    def add_itinerary(self, vacation_id, day, start_time, end_time, activity, location = None, notest = None):
+        self.conn.execute("""
+                INSERT INTO itineraries(vacation_id, day, start_time, end_time, activity, location, notest) VALUES (?, ?, ?, ?, ?, ?, ?)
+                          """, (vacation_id, day, start_time, end_time, activity, location, notest))
+        self.conn.commit()
+
+
+    
     
