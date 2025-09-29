@@ -5,7 +5,7 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.toolbar import MDTopAppBar
 from kivymd.uix.navigationrail import MDNavigationRail, MDNavigationRailItem
 from kivymd.uix.label import MDLabel
-from datetime import date
+from datetime import date, timedelta
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.button import MDRectangleFlatButton
 from kivymd.uix.pickers.timepicker import MDTimePicker
@@ -13,7 +13,6 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.textfield import MDTextField
 
 from kivy.clock import Clock
-from kivy.properties import StringProperty
 
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -102,6 +101,7 @@ class VacationDetailScreen(MDScreen):
         self.show_day_details(1)
 
     def show_day_details(self, day):
+        self.current_day = day
         self.detail_container.clear_widgets()
 
         self.add_activity_btn = MDRaisedButton(
@@ -139,27 +139,27 @@ class VacationDetailScreen(MDScreen):
         self.end_time_btn.bind(on_release = self.show_end_time_picker)
         content.add_widget(self.end_time_btn)
 
-        activity = MDTextField(hint_text = "Activity")
-        content.add_widget(activity)
+        self.activity = MDTextField(hint_text = "Activity", id = "activity")
+        content.add_widget(self.activity)
 
-        location = MDTextField(hint_text = "Location")
-        content.add_widget(location)
+        self.location = MDTextField(hint_text = "Location", id = "location")
+        content.add_widget(self.location)
 
-        notest = MDTextField(hint_text = "Details")
-        content.add_widget(notest)
+        self.notest = MDTextField(hint_text = "Details", id = "notest")
+        content.add_widget(self.notest)
 
 
-        self.dialog = MDDialog(
+        self.activity_dialog = MDDialog(
             title = "Add activity",
             type = "custom",
             content_cls = content,
             buttons=[
-                MDRaisedButton(text="Cancel", on_release=lambda x: self.dialog.dismiss()),
-                #MDRaisedButton(text="Save", on_release=self.add_vacation)
+                MDRaisedButton(text="Cancel", on_release=lambda x: self.activity_dialog.dismiss()),
+                MDRaisedButton(text="Add", on_release=self.add_activity)
             ]
 
         )
-        self.dialog.open()
+        self.activity_dialog.open()
 
     def show_start_time_picker(self, instance):
         time_dialog = MDTimePicker()
@@ -179,12 +179,29 @@ class VacationDetailScreen(MDScreen):
         self.end_time = value
         self.end_time_btn.text =f"End time: {value.strftime("%H:%M")}" 
 
-    def add_detaild(self, *args):
-        pass
-      
+    def add_activity(self, *args):
+        activity = self.activity.text
+        location = self.location.text
+        notest  = self.notest.text
+        vacation_id = self.vacation.id
+        day_number = self.current_day
+        day =  self.start_date + timedelta(days=day_number - 1)   
 
+        self.db.add_activity(
+        vacation_id=vacation_id,
+        day_date=day.isoformat(),
+        start_time=self.start_time.strftime("%H:%M"),
+        end_time=self.end_time.strftime("%H:%M"),
+        activity=activity,
+        location=location,
+        notest=notest,
+               
+    )   
+        self.activity_dialog.dismiss()
 
     def go_back(self):
         app = MDApp.get_running_app()
         app.sm.transition = SlideTransition(direction="right")
         app.sm.current = "vacations"
+
+        

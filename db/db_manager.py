@@ -91,7 +91,7 @@ class DatabaseManager:
 
 
     ########################################## METHODS FOR ITINERARY MANAGEMENT ###########################################
-    def add_itinerary(self, vacation_id, day, start_time, end_time, activity, location = None, notest = None):
+    def add_activity(self, vacation_id, day, start_time, end_time, activity, location = None, notest = None):
         self.conn.execute("""
                 INSERT INTO itineraries(vacation_id, day, start_time, end_time, activity, location, notest) VALUES (?, ?, ?, ?, ?, ?, ?)
                           """, (vacation_id, day, start_time, end_time, activity, location, notest))
