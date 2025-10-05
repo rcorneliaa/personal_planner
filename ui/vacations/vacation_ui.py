@@ -38,7 +38,7 @@ class VacationsScreen(MDScreen):
         top_bar = MDTopAppBar(
             title = "My Vacations",
             left_action_items = [["arrow-left", lambda x: self.go_back()]],
-            elevation = 10,
+            # elevation = 10,
             pos_hint = {"top": 1},
             type = "top"
             
@@ -239,7 +239,6 @@ class VacationsScreen(MDScreen):
                 img = Image(texture = texture, size_hint=(1, None), height=dp(240), allow_stretch = True, keep_ratio = True)
                 card.add_widget(img)
             
-            # eticheta cu țară și oraș
             destination = vac.destination
             label = MDLabel(
                 text=destination,
@@ -250,16 +249,9 @@ class VacationsScreen(MDScreen):
         
             )
             card.add_widget(label)
-            # card.go_to_detail = lambda vac=vac: self.go_to_vacation_detail(vac)
             self.vacation_list.add_widget(card)
     
-    # def go_to_vacation_detail(self, vacation):
-    #     app = MDApp.get_running_app()
-    #     detail_screen = app.sm.get_screen("vacation_details")
-    #     detail_screen.set_vacation(vacation) 
-    #     app.sm.transition = SlideTransition(direction='left')
-    #     app.sm.current = "vacation_details"
- 
+   
 
 
 

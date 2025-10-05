@@ -11,8 +11,10 @@ from kivymd.uix.button import MDRectangleFlatButton
 from kivymd.uix.pickers.timepicker import MDTimePicker
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.textfield import MDTextField
+from kivy.uix.scrollview import ScrollView
 
 from kivy.clock import Clock
+from models.vacation import ActivityCard
 
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
@@ -39,7 +41,7 @@ class VacationDetailScreen(MDScreen):
         top_bar = MDTopAppBar(
             title="Itinerary",
             left_action_items=[["arrow-left", lambda x: self.go_back()]],
-            elevation=10,
+            # elevation=10,
             pos_hint={"top": 1},
             type_height="small",
         )
@@ -56,8 +58,8 @@ class VacationDetailScreen(MDScreen):
         if hasattr(self, 'rail'):
             self.content_layout.remove_widget(self.rail)
 
-        if hasattr(self, 'detail_container'):
-            self.content_layout.remove_widget(self.detail_container)
+        if hasattr(self, 'scroll'):
+            self.content_layout.remove_widget(self.scroll)
           
         self.rail =MDNavigationRail(
                 MDNavigationRailMenuButton(
@@ -93,11 +95,14 @@ class VacationDetailScreen(MDScreen):
             )
             
             self.rail.add_widget(item)
-        self.detail_container = MDBoxLayout(orientation = "vertical")
+        self.scroll = ScrollView(size_hint = (1,1))
+        self.detail_container = MDBoxLayout(orientation = "vertical", size_hint = (1, None), spacing = 15, padding=(0, 56, 0, 0))
+        self.detail_container.bind(minimum_height=self.detail_container.setter('height'))
         
 
         self.content_layout.add_widget(self.rail)
-        self.content_layout.add_widget(self.detail_container)
+        self.scroll.add_widget(self.detail_container)
+        self.content_layout.add_widget(self.scroll)
         self.show_day_details(1)
 
     def show_day_details(self, day):
@@ -114,12 +119,16 @@ class VacationDetailScreen(MDScreen):
             on_release = self.show_details_dialog
          
         )
-        # # Aici iei activitățile din DB pentru ziua curentă
-        # activities = self.db.get_activities(self.vacation.id, day)
-
-        
         self.detail_container.add_widget(MDLabel(text=f"Day {day} details", halign="center"))
+        day_date = self.start_date + timedelta(days=day - 1)
+        activities = self.db.get_activities(self.vacation.id, day_date.isoformat())
+
+        for act in activities:
+            card = ActivityCard(act, db = self.db, screen= self)
+            self.detail_container.add_widget(card)
+            
         self.detail_container.add_widget(self.add_activity_btn)
+        self.detail_container.bind(minimum_height=self.detail_container.setter('height'))
 
     def show_details_dialog(self, *args):
         content = MDBoxLayout(
@@ -189,7 +198,7 @@ class VacationDetailScreen(MDScreen):
 
         self.db.add_activity(
         vacation_id=vacation_id,
-        day_date=day.isoformat(),
+        day=day.isoformat(),
         start_time=self.start_time.strftime("%H:%M"),
         end_time=self.end_time.strftime("%H:%M"),
         activity=activity,
@@ -198,6 +207,7 @@ class VacationDetailScreen(MDScreen):
                
     )   
         self.activity_dialog.dismiss()
+        self.show_day_details(self.current_day)
 
     def go_back(self):
         app = MDApp.get_running_app()

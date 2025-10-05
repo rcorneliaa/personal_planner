@@ -1,6 +1,7 @@
 import sqlite3
 from models.task import Task
 from models.vacation import Vacation
+from models.vacation import Itinerary
 
 class DatabaseManager:
     def __init__(self, db_path = "personal_planner.db"):
@@ -96,6 +97,20 @@ class DatabaseManager:
                 INSERT INTO itineraries(vacation_id, day, start_time, end_time, activity, location, notest) VALUES (?, ?, ?, ?, ?, ?, ?)
                           """, (vacation_id, day, start_time, end_time, activity, location, notest))
         self.conn.commit()
+
+
+    def get_activities(self, vacation_id, day):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT id, vacation_id, day, start_time, end_time, activity, location, notest "
+                       "FROM itineraries WHERE vacation_id=? AND day=?", (vacation_id, day))
+        rows = cursor.fetchall()
+        return [Itinerary(**row) for row in rows]
+    
+    def delete_activity(self, activity_id):
+        cursor = self.conn.cursor()
+        cursor.execute("""DELETE FROM itineraries WHERE id=? """, (activity_id,))
+        self.conn.commit()
+        return True
 
 
     

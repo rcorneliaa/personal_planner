@@ -2,7 +2,7 @@
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.label import MDLabel
-from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.floatlayout import FloatLayout
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import SlideTransition
 from kivy.uix.image import Image
@@ -11,33 +11,35 @@ class StartScreen(MDScreen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        layout = MDBoxLayout(orientation="vertical", spacing=20, padding=40)
+        layout = FloatLayout()
 
         title = MDLabel(
             text="Personal Planner",
             halign="center",
             theme_text_color="Primary",
-            font_style="H4"
+            font_style="H4",
+            pos_hint={"center_x": 0.5, "center_y": 0.9}
         )
 
         todo_button = MDRaisedButton(
             text="To-Do Lists",
-            pos_hint={"center_x": 0.2, "center_y": 0.5},
+            pos_hint={"center_x": 0.2, "center_y": 0.35},
             on_release=self.go_to_todo
         )
         
         vacation_planer_button = MDRaisedButton(
             text = "My Vacations",
-            pos_hint = {"center_x": 0.5, "center_y": 0.5},
+            pos_hint = {"center_x": 0.8, "center_y": 0.35},
             on_release = self.go_vacations
 
         )
 
         self.image_display = Image(
             source=r"utils\logo.png", 
-            size_hint=(1, 0.5),
+            size_hint=(0.6, 0.3),
             allow_stretch=True,
-            keep_ratio=True
+            keep_ratio=True,
+            pos_hint={"center_x": 0.5, "center_y": 0.65}
         )
 
         
