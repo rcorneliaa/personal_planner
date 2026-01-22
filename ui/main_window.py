@@ -1,4 +1,11 @@
-# ui/start_ui.py
+"""
+Start screen of the Personal Planner application.
+
+This module defines the initial UI screen that allows users
+to navigate to the To-Do Lists and Vacation Planner sections.
+"""
+
+
 from kivymd.uix.screen import MDScreen
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.label import MDLabel
@@ -8,7 +15,15 @@ from kivy.uix.screenmanager import SlideTransition
 from kivy.uix.image import Image
 
 class StartScreen(MDScreen):
+    """
+    Main start screen of the application.
+
+    Displays the application title, logo, and navigation buttons
+    for accessing the To-Do Lists and Vacation Planner screens.
+    """
+
     def __init__(self, **kwargs):
+        """Initializes the start screen UI layout."""
         super().__init__(**kwargs)
 
         layout = FloatLayout()
@@ -50,11 +65,21 @@ class StartScreen(MDScreen):
         self.add_widget(layout)
 
     def go_to_todo(self, instance):
+        """
+        Navigates to the To-Do Lists screen.
+
+        :param instance: Button instance that triggered the navigation
+        """
         app = MDApp.get_running_app()
         app.sm.transition = SlideTransition(direction='left')
         app.sm.current = "todo"
 
     def go_vacations(self, instance):
+        """
+        Navigates to the Vacation Planner screen.
+
+        :param instance: Button instance that triggered the navigation
+        """
         app = MDApp.get_running_app()
         app.sm.transition = SlideTransition(direction = 'left')
         app.sm.current = "vacations"

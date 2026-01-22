@@ -1,3 +1,10 @@
+"""
+Vacation detail screen of the Personal Planner application.
+
+This module defines the UI and logic for displaying and managing
+daily itineraries within a selected vacation, including activities
+per day and time-based scheduling.
+"""
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import SlideTransition
 from kivymd.uix.screen import MDScreen
@@ -31,6 +38,13 @@ from kivymd.uix.screen import MDScreen
 
 
 class VacationDetailScreen(MDScreen):
+    """
+    Screen displaying detailed vacation itinerary.
+
+    Allows navigation between vacation days and management of
+    daily activities, including time selection and notes.
+    """
+
     def __init__(self, db_manager, **kwargs):
         super().__init__(**kwargs)
         self.db = db_manager
@@ -54,6 +68,11 @@ class VacationDetailScreen(MDScreen):
 
 
     def set_vacation(self, vacation):
+        """
+        Sets the selected vacation and initializes day navigation.
+
+        :param vacation: Vacation object containing start/end dates
+        """
         self.vacation = vacation
         if hasattr(self, 'rail'):
             self.content_layout.remove_widget(self.rail)
@@ -106,6 +125,11 @@ class VacationDetailScreen(MDScreen):
         self.show_day_details(1)
 
     def show_day_details(self, day):
+        """
+        Displays activities for a specific vacation day.
+
+        :param day: Day number within the vacation
+        """
         self.current_day = day
         self.detail_container.clear_widgets()
 
@@ -131,6 +155,9 @@ class VacationDetailScreen(MDScreen):
         self.detail_container.bind(minimum_height=self.detail_container.setter('height'))
 
     def show_details_dialog(self, *args):
+        """
+        Opens a dialog for adding a new activity.
+        """
         content = MDBoxLayout(
             orientation="vertical",
             spacing=20,
@@ -171,24 +198,44 @@ class VacationDetailScreen(MDScreen):
         self.activity_dialog.open()
 
     def show_start_time_picker(self, instance):
+        """
+        Opens a time picker for selecting activity start time.
+        """
         time_dialog = MDTimePicker()
         time_dialog.bind(time = self.set_start_time)
         time_dialog.open()
 
     def set_start_time(self, instance, value):
+        """
+        Sets the selected start time.
+
+        :param value: Selected time
+        """
         self.start_time = value
         self.start_time_btn.text =f"Start time: {value.strftime("%H:%M")}" 
 
     def show_end_time_picker(self, instance):
+        """
+        Opens a time picker for selecting activity end time.
+        """
         time_dialog = MDTimePicker()
         time_dialog.bind(time = self.set_end_time)
         time_dialog.open()
 
     def set_end_time(self, instance, value):
+        """
+        Sets the selected end time.
+
+        :param value: Selected time
+        """
         self.end_time = value
         self.end_time_btn.text =f"End time: {value.strftime("%H:%M")}" 
 
     def add_activity(self, *args):
+        """
+        Saves a new activity to the database
+        and refreshes the current day view.
+        """
         activity = self.activity.text
         location = self.location.text
         notest  = self.notest.text
@@ -210,6 +257,9 @@ class VacationDetailScreen(MDScreen):
         self.show_day_details(self.current_day)
 
     def go_back(self):
+        """
+        Navigates back to the vacations screen.
+        """
         app = MDApp.get_running_app()
         app.sm.transition = SlideTransition(direction="right")
         app.sm.current = "vacations"

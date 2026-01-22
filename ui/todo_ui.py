@@ -1,3 +1,10 @@
+"""
+To-Do List screen of the Personal Planner application.
+
+This module defines the UI and logic for managing daily to-do tasks,
+including date selection, task creation, status updates, and navigation.
+"""
+
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import SlideTransition
 from kivymd.uix.screen import MDScreen
@@ -17,13 +24,21 @@ from kivymd.uix.label import MDLabel
 #Clasa pentru To Do listuri
 
 class TodoScreen(MDScreen):
+    """
+    Screen for managing to-do tasks.
+
+    Allows users to select a date, view tasks for that day,
+    add new tasks, and mark tasks as completed or in progress.
+    """
+
     def __init__(self, db_manager, **kwargs):
+        """Initializes the To-Do screen and its UI components."""
         super().__init__(**kwargs)
         self.db = db_manager
         self.selected_date = None
 
 
-        #Prima pagina
+        
         main_layout = MDBoxLayout(orientation='vertical')
         top_bar = MDTopAppBar(
             title="To-Do List",
@@ -32,7 +47,7 @@ class TodoScreen(MDScreen):
         )
         main_layout.add_widget(top_bar)
 
-        #Selectare data        
+                
         self.date_btn = MDRaisedButton(
             text="Choose Day",
             size_hint=(None, None),
@@ -50,7 +65,7 @@ class TodoScreen(MDScreen):
         main_layout.add_widget(self.scroll)
 
 
-        #Buton de Adauga Task
+        
         self.add_btn = MDRaisedButton(
             icon="plus",
             text="Add Task",    
@@ -68,28 +83,45 @@ class TodoScreen(MDScreen):
         self.refresh_tasks()
 
 
-    #De ales data
+    
     def show_date_picker(self, *args):
+        """
+        Opens a date picker dialog.
+
+        Allows the user to select the day for which tasks will be displayed.
+        """
         date_dialog = MDDatePicker()
         date_dialog.bind(on_save=self.on_date_selected)
         date_dialog.open()
 
 
     def on_date_selected(self, instance, value, date_range):
+        """
+        Handles the selected date from the date picker.
+
+        :param instance: Date picker instance
+        :param value: Selected date
+        :param date_range: Optional date range (unused)
+        """
         self.selected_date = str(value)
         self.date_btn.text = f"Ziua: {self.selected_date}"
         self.refresh_tasks()
 
 
-    #Functia sa adaug task
+    
     def add_task(self, title, popup):
         if title.strip():
             self.db.add_task(title = title.strip())
             self.refresh_tasks()
             popup.dismiss()
 
-    #REFRESHHHHHH PT TASK
+    
     def refresh_tasks(self):
+        """
+        Refreshes the task list for the selected date.
+
+        Fetches tasks from the database and updates the UI accordingly.
+        """
         self.task_list.clear_widgets()
         if not self.selected_date:
             return
@@ -111,6 +143,11 @@ class TodoScreen(MDScreen):
 
         
     def show_add_task_dialog(self, *args):
+        """
+        Displays a dialog for adding a new task.
+
+        Requires a date to be selected before allowing task creation.
+        """
         if not self.selected_date:
             self.date_btn.text = "Choose a day!"
             return
@@ -134,6 +171,12 @@ class TodoScreen(MDScreen):
 
 
     def add_task(self, *args):
+        """
+        Adds a new task for the selected date.
+
+        Retrieves the task title from the dialog,
+        saves it to the database, and refreshes the UI.
+        """
         title = self.dialog.content_cls.ids.title.text
         
         if not title.strip():
@@ -145,6 +188,12 @@ class TodoScreen(MDScreen):
 
 
     def mark_task_done(self, task_id, value):
+        """
+        Updates the status of a task.
+
+        :param task_id: ID of the task
+        :param value: Checkbox state (True if completed)
+        """
         if value:
             self.db.mark_task_done(task_id) 
         else:
@@ -153,6 +202,9 @@ class TodoScreen(MDScreen):
 
 
     def go_back(self):
+        """
+        Navigates back to the start screen.
+        """
         app = MDApp.get_running_app()
         app.sm.transition = SlideTransition(direction='right')
         app.sm.current = "start"

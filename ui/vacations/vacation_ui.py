@@ -1,3 +1,11 @@
+"""
+Vacations screen of the Personal Planner application.
+
+This module defines the UI and logic for managing vacations,
+including date selection, destination selection, and displaying
+saved vacation plans.
+"""
+
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import SlideTransition
 from kivymd.uix.screen import MDScreen
@@ -25,7 +33,16 @@ from kivymd.toast import toast
 import os
 
 class VacationsScreen(MDScreen):
+    """
+    Screen for managing vacation plans.
+
+    Allows users to add new vacations by selecting dates and destinations
+    and displays existing vacations as cards with images and details.
+    """
+
+
     def __init__(self, db_manager, **kwargs):
+        """Initializes the Vacations screen and loads destination data."""
         super().__init__(**kwargs)
         self.db = db_manager
 
@@ -33,7 +50,7 @@ class VacationsScreen(MDScreen):
             self.destination_data = json.load(file)
 
 
-        #Prima pagina
+      
         main_layout = MDBoxLayout(orientation = 'vertical')
         top_bar = MDTopAppBar(
             title = "My Vacations",
@@ -57,7 +74,6 @@ class VacationsScreen(MDScreen):
         main_layout.add_widget(self.scroll)
 
 
-        #Adaugare vacanta noua
         self.add_vacation_btn = MDRaisedButton(
             icon="plus",
             text = "New Vacation",
@@ -75,12 +91,20 @@ class VacationsScreen(MDScreen):
 
 
     def go_back(self):
+        """
+        Navigates back to the start screen.
+        """
         app = MDApp.get_running_app()
         app.sm.transition = SlideTransition(direction='right')
         app.sm.current = "start"
 
     
     def show_details_dialog(self, *args):
+        """
+        Opens a dialog for entering vacation details.
+
+        The user can select start date, end date, and destination.
+        """
         content = MDBoxLayout(
             orientation="vertical",
             spacing=20,
@@ -116,6 +140,9 @@ class VacationsScreen(MDScreen):
 
 
     def show_start_date_picker(self, instance):
+        """
+        Opens a date picker for selecting the vacation start date.
+        """
         date_dialog = MDDatePicker(
             title = "Start date"
         )
@@ -124,11 +151,21 @@ class VacationsScreen(MDScreen):
 
 
     def set_start_date(self, instance, value, data_range):
+        """
+        Sets the selected start date.
+
+        :param instance: Date picker instance
+        :param value: Selected start date
+        :param data_range: Optional date range (unused)
+        """
         self.start_date = value
         self.start_btn.text = str(value)
 
 
     def show_end_date_picker(self, *args):
+        """
+        Opens a date picker for selecting the vacation end date.
+        """
         date_dialog = MDDatePicker(
             title = "End date"
         )
@@ -137,8 +174,12 @@ class VacationsScreen(MDScreen):
 
 
     def set_end_date(self, instance, value, data_range):
+        """
+        Sets the selected end date and validates it.
+
+        Ensures that the end date is after the start date.
+        """
         if value < self.start_date:
-            
             toast("End date must be after start date!", [0.2, 0.2, 0.2, 0.5], 1)
             from kivy.clock import Clock
             Clock.schedule_once(lambda dt: self.show_end_date_picker(), 1)
@@ -147,6 +188,9 @@ class VacationsScreen(MDScreen):
             self.end_btn.text = str(value)
 
     def open_country_menu(self, instance):
+        """
+        Opens a dropdown menu for selecting a country.
+        """
         menu_items = [
             {"text": country,
              "viewclass": "OneLineListItem",
@@ -163,11 +207,21 @@ class VacationsScreen(MDScreen):
         self.country_menu.open()
 
     def select_country(self, country):
+        """
+        Stores the selected country and opens the city menu.
+
+        :param country: Selected country name
+        """
         self.selected_country = country
         self.country_menu.dismiss()
         self.open_city_menu(country)
 
     def open_city_menu(self, country):
+        """
+        Opens a dropdown menu for selecting a city.
+
+        :param country: Selected country
+        """
         city_items = [
             {"text": city["city"],
              "viewclass": "OneLineListItem",
@@ -184,6 +238,11 @@ class VacationsScreen(MDScreen):
         self.city_menu.open()
 
     def select_city(self, city):
+        """
+        Stores the selected city and updates the UI.
+
+        :param city: Selected city name
+        """
         self.selected_city = city
         self.country_btn.text = f"{self.selected_country}, {city}"
         self.city_menu.dismiss()
@@ -192,6 +251,12 @@ class VacationsScreen(MDScreen):
 
     
     def add_vacation(self, *args):
+        """
+        Saves a new vacation to the database.
+
+        Validates that all required details are selected
+        before persisting the vacation.
+        """
         if not hasattr(self, "start_date") or not hasattr(self, "end_date"):
             toast("Please select both start and end dates!", [0.2, 0.2, 0.2, 0.5], 1)
             return
@@ -209,8 +274,14 @@ class VacationsScreen(MDScreen):
 
 
     def refresh_vacations(self):
-        self.vacation_list.clear_widgets()
+        """
+        Refreshes the list of vacations displayed on screen.
 
+        Retrieves vacations from the database and displays
+        them as cards with images and destination labels.
+        """
+
+        self.vacation_list.clear_widgets()
         vacations = self.db.get_vacations()
         for vac in vacations:
             country, city = vac.destination.split(", ")
