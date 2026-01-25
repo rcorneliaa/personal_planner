@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ui.todo_ui &#8212; Personal Planer 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for ui.todo_ui</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">To-Do List screen of the Personal Planner application.</span>
+
+<span class="sd">This module defines the UI and logic for managing daily to-do tasks,</span>
+<span class="sd">including date selection, task creation, status updates, and navigation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.app</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDApp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivy.uix.screenmanager</span><span class="w"> </span><span class="kn">import</span> <span class="n">SlideTransition</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.screen</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDScreen</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.boxlayout</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDBoxLayout</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.scrollview</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDScrollView</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.list</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDList</span><span class="p">,</span> <span class="n">OneLineAvatarIconListItem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.list</span><span class="w"> </span><span class="kn">import</span> <span class="n">TwoLineListItem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.toolbar</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDTopAppBar</span> 
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.dialog</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDDialog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.button</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDRaisedButton</span><span class="p">,</span> <span class="n">MDFlatButton</span><span class="p">,</span> <span class="n">MDIconButton</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.textfield</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDTextField</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.pickers.datepicker</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDDatePicker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.selectioncontrol</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDCheckbox</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">kivymd.uix.label</span><span class="w"> </span><span class="kn">import</span> <span class="n">MDLabel</span>
+
+
+<span class="c1">#Clasa pentru To Do listuri</span>
+
+<div class="viewcode-block" id="TodoScreen">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TodoScreen</span><span class="p">(</span><span class="n">MDScreen</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Screen for managing to-do tasks.</span>
+
+<span class="sd">    Allows users to select a date, view tasks for that day,</span>
+<span class="sd">    add new tasks, and mark tasks as completed or in progress.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_manager</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the To-Do screen and its UI components.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db_manager</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_date</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+        
+        <span class="n">main_layout</span> <span class="o">=</span> <span class="n">MDBoxLayout</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;vertical&#39;</span><span class="p">)</span>
+        <span class="n">top_bar</span> <span class="o">=</span> <span class="n">MDTopAppBar</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;To-Do List&quot;</span><span class="p">,</span>
+            <span class="n">left_action_items</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;arrow-left&quot;</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">go_back</span><span class="p">()]],</span>
+            <span class="n">elevation</span><span class="o">=</span><span class="mi">10</span>
+        <span class="p">)</span>
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="n">top_bar</span><span class="p">)</span>
+
+                
+        <span class="bp">self</span><span class="o">.</span><span class="n">date_btn</span> <span class="o">=</span> <span class="n">MDRaisedButton</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Choose Day&quot;</span><span class="p">,</span>
+            <span class="n">size_hint</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            
+            <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">150</span><span class="p">,</span> <span class="mi">40</span><span class="p">),</span>
+            <span class="n">pos_hint</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;center_x&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span>
+            <span class="n">on_release</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">show_date_picker</span>
+        <span class="p">)</span>
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">date_btn</span><span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scroll</span> <span class="o">=</span> <span class="n">MDScrollView</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_list</span> <span class="o">=</span> <span class="n">MDList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">task_list</span><span class="p">)</span>
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scroll</span><span class="p">)</span>
+
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_btn</span> <span class="o">=</span> <span class="n">MDRaisedButton</span><span class="p">(</span>
+            <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;plus&quot;</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Add Task&quot;</span><span class="p">,</span>    
+            <span class="n">pos_hint</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;right&quot;</span><span class="p">:</span> <span class="mf">0.97</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="mf">0.02</span><span class="p">},</span>
+            <span class="n">size_hint</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+            <span class="n">height</span><span class="o">=</span><span class="s2">&quot;48dp&quot;</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;12dp&quot;</span><span class="p">,</span> <span class="s2">&quot;10dp&quot;</span><span class="p">,</span> <span class="s2">&quot;12dp&quot;</span><span class="p">,</span> <span class="s2">&quot;10dp&quot;</span><span class="p">),</span>
+            <span class="n">on_release</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">show_add_task_dialog</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_btn</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">on_release</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">show_add_task_dialog</span><span class="p">)</span>
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_btn</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="n">main_layout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_tasks</span><span class="p">()</span>
+
+
+    
+<div class="viewcode-block" id="TodoScreen.show_date_picker">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen.show_date_picker">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show_date_picker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Opens a date picker dialog.</span>
+
+<span class="sd">        Allows the user to select the day for which tasks will be displayed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">date_dialog</span> <span class="o">=</span> <span class="n">MDDatePicker</span><span class="p">()</span>
+        <span class="n">date_dialog</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">on_save</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">on_date_selected</span><span class="p">)</span>
+        <span class="n">date_dialog</span><span class="o">.</span><span class="n">open</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="TodoScreen.on_date_selected">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen.on_date_selected">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_date_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">date_range</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Handles the selected date from the date picker.</span>
+
+<span class="sd">        :param instance: Date picker instance</span>
+<span class="sd">        :param value: Selected date</span>
+<span class="sd">        :param date_range: Optional date range (unused)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selected_date</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">date_btn</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Ziua: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_date</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_tasks</span><span class="p">()</span></div>
+
+
+
+    
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">popup</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">title</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_tasks</span><span class="p">()</span>
+            <span class="n">popup</span><span class="o">.</span><span class="n">dismiss</span><span class="p">()</span>
+
+    
+<div class="viewcode-block" id="TodoScreen.refresh_tasks">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen.refresh_tasks">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_tasks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Refreshes the task list for the selected date.</span>
+
+<span class="sd">        Fetches tasks from the database and updates the UI accordingly.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">task_list</span><span class="o">.</span><span class="n">clear_widgets</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_date</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="n">tasks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_tasks_by_date</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_date</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="n">MDBoxLayout</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;horizontal&#39;</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">size_hint_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s2">&quot;40dp&quot;</span><span class="p">)</span>
+
+        
+            <span class="n">checkbox</span> <span class="o">=</span> <span class="n">MDCheckbox</span><span class="p">(</span><span class="n">active</span><span class="o">=</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;done&quot;</span><span class="p">))</span>
+            <span class="n">checkbox</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">active</span><span class="o">=</span><span class="k">lambda</span> <span class="n">cb</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">task_id</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">mark_task_done</span><span class="p">(</span><span class="n">task_id</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+            <span class="n">label</span> <span class="o">=</span> <span class="n">MDLabel</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">task</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+          
+            <span class="n">row</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="n">checkbox</span><span class="p">)</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">task_list</span><span class="o">.</span><span class="n">add_widget</span><span class="p">(</span><span class="n">row</span><span class="p">)</span></div>
+
+
+        
+<div class="viewcode-block" id="TodoScreen.show_add_task_dialog">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen.show_add_task_dialog">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show_add_task_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Displays a dialog for adding a new task.</span>
+
+<span class="sd">        Requires a date to be selected before allowing task creation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_date</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">date_btn</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;Choose a day!&quot;</span>
+            <span class="k">return</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">dialog</span> <span class="o">=</span> <span class="n">MDDialog</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Add Task&quot;</span><span class="p">,</span>
+            <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;custom&quot;</span><span class="p">,</span>
+            <span class="n">content_cls</span><span class="o">=</span><span class="n">MDBoxLayout</span><span class="p">(</span>
+                <span class="n">MDTextField</span><span class="p">(</span><span class="n">hint_text</span><span class="o">=</span><span class="s2">&quot;Title&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;title&quot;</span><span class="p">),</span>
+                <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">,</span>
+                <span class="n">spacing</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                <span class="n">size_hint_y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">height</span><span class="o">=</span><span class="s2">&quot;150dp&quot;</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">buttons</span><span class="o">=</span><span class="p">[</span>
+                <span class="n">MDRaisedButton</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Cancel&quot;</span><span class="p">,</span> <span class="n">on_release</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialog</span><span class="o">.</span><span class="n">dismiss</span><span class="p">()),</span>
+                <span class="n">MDRaisedButton</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Add&quot;</span><span class="p">,</span> <span class="n">on_release</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">add_task</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dialog</span><span class="o">.</span><span class="n">open</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="TodoScreen.add_task">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen.add_task">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a new task for the selected date.</span>
+
+<span class="sd">        Retrieves the task title from the dialog,</span>
+<span class="sd">        saves it to the database, and refreshes the UI.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dialog</span><span class="o">.</span><span class="n">content_cls</span><span class="o">.</span><span class="n">ids</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">text</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">title</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+            <span class="k">return</span>  
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">add_task</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">deadline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_date</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dialog</span><span class="o">.</span><span class="n">dismiss</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_tasks</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="TodoScreen.mark_task_done">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen.mark_task_done">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mark_task_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the status of a task.</span>
+
+<span class="sd">        :param task_id: ID of the task</span>
+<span class="sd">        :param value: Checkbox state (True if completed)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">mark_task_done</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">mark_task_in_progress</span><span class="p">(</span><span class="n">task_id</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_tasks</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="TodoScreen.go_back">
+<a class="viewcode-back" href="../../ui.html#ui.todo_ui.TodoScreen.go_back">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">go_back</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Navigates back to the start screen.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">app</span> <span class="o">=</span> <span class="n">MDApp</span><span class="o">.</span><span class="n">get_running_app</span><span class="p">()</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">transition</span> <span class="o">=</span> <span class="n">SlideTransition</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">sm</span><span class="o">.</span><span class="n">current</span> <span class="o">=</span> <span class="s2">&quot;start&quot;</span></div>
+</div>
+
+
+
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">Personal Planer</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Cornelia Rusu.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

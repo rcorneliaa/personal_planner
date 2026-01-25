@@ -7,6 +7,16 @@ from kivymd.uix.dialog import MDDialog
 from kivy.animation import Animation
 
 class Vacation:
+    """
+    Represents a vacation entity.
+
+    Attributes:
+        id (int): Unique identifier of the vacation
+        destination (str): Vacation destination (country, city)
+        start_date (str | date): Start date of the vacation
+        end_date (str | date): End date of the vacation
+    """
+
     def __init__(self, id,destination, start_date, end_date):
         self.id = id
         self.destination = destination
@@ -15,6 +25,9 @@ class Vacation:
 
 
 class Itinerary:
+    """
+    Represents an activity planned during a vacation day.
+    """
     def __init__(self, id, vacation_id, day, start_time, end_time, activity, location, notest):
         self.id = id
         self.vacation_id = vacation_id
@@ -26,7 +39,22 @@ class Itinerary:
         self.notest = notest
 
 class ActivityCard(MDCard):
+    """
+    Custom UI card used to display a vacation activity.
+
+    Provides:
+    - Activity details (time, name, location, notes)
+    - Delete functionality with confirmation dialog
+    """
+
     def __init__(self, activity_data, db = None, screen = None, **kwargs):
+        """
+        Initializes an activity card.
+
+        :param activity_data: Activity data object
+        :param db: Database manager instance
+        :param screen: Parent screen reference
+        """
         super().__init__(**kwargs)
         self.activity_data = activity_data
         self.db = db
@@ -93,6 +121,9 @@ class ActivityCard(MDCard):
         self.add_widget(main_layout)
 
     def confirm_delete(self, *args):
+        """
+        Opens a confirmation dialog before deleting the activity.
+        """
         self.confirm_dialog = MDDialog(
         title="Confirmare",
         text=f"Ștergi activitatea „{self.activity_data.activity}”?",
@@ -105,6 +136,9 @@ class ActivityCard(MDCard):
 
 
     def delete_activity(self, *args):
+        """
+        Deletes the activity from the database and removes the card with animation.
+        """
         self.confirm_dialog.dismiss()
         if self.db:
             success = self.db.delete_activity(self.activity_data.id)
@@ -117,6 +151,9 @@ class ActivityCard(MDCard):
             anim.start(self)
 
     def remove_from_parent(self):
+        """
+        Removes the card from its parent layout.
+        """
         if self.parent and self.screen:
             self.parent.remove_widget(self)
 

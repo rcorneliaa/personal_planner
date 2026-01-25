@@ -8,7 +8,23 @@ from ui.vacations.vacation_details_ui import VacationDetailScreen
 
 
 class PersonalPlannerApp(MDApp):
+    """
+    Main application class for the Personal Planner app.
+
+    Responsible for:
+    - Initializing the database
+    - Configuring the application theme
+    - Setting up screen navigation
+    """
     def build(self):
+        """
+        Builds and returns the root widget of the application.
+
+        Initializes:
+        - App theme
+        - Database connection
+        - ScreenManager and all screens
+        """
         self.theme_cls.theme_style = "Light"  # sau "Dark"
         self.theme_cls.primary_palette = "DeepPurple"
 
