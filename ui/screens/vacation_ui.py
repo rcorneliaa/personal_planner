@@ -25,8 +25,8 @@ from kivymd.uix.menu import MDDropdownMenu
 from kivy.uix.gridlayout import GridLayout
 from kivymd.uix.card import MDCard
 from kivy.uix.image import Image
-from utils.helper import load_resized_image
-from utils.helper import ClickCard
+from ui.components.vacation_card import load_resized_image
+from ui.components.vacation_card import ClickCard
 import json
 from kivy.metrics import dp
 from kivymd.toast import toast
@@ -41,10 +41,10 @@ class VacationsScreen(MDScreen):
     """
 
 
-    def __init__(self, db_manager, **kwargs):
+    def __init__(self, vacation_services, **kwargs):
         """Initializes the Vacations screen and loads destination data."""
         super().__init__(**kwargs)
-        self.db = db_manager
+        self.vacation_services = vacation_services
 
         with open(r"utils\destinations.json", "r", encoding= "utf-8") as file:
             self.destination_data = json.load(file)
@@ -263,14 +263,14 @@ class VacationsScreen(MDScreen):
         if not hasattr(self, "selected_country") or not hasattr(self, "selected_city"):
             toast("Please select a country and a city!", [0.2, 0.2, 0.2, 0.5], 1)
             return
-        
-        self.db.add_vacation(
-            destination = f"{self.selected_country}, {self.selected_city}",
-            start_date = str(self.start_date),
-            end_date = str(self.end_date)
-        )
-        self.dialog.dismiss()
-        self.refresh_vacations()
+    
+        destination = f"{self.selected_country}, {self.selected_city}"
+        start_date = str(self.start_date)
+        end_date = str(self.end_date)
+        succes = self.vacation_services.add_vacation(destination, start_date, end_date)
+        if succes:
+            self.dialog.dismiss()
+            self.refresh_vacations()
 
 
     def refresh_vacations(self):
@@ -282,7 +282,7 @@ class VacationsScreen(MDScreen):
         """
 
         self.vacation_list.clear_widgets()
-        vacations = self.db.get_vacations()
+        vacations = self.vacation_services.get_vacations()
         for vac in vacations:
             country, city = vac.destination.split(", ")
             picture_path = ""
