@@ -21,7 +21,7 @@ from kivymd.uix.selectioncontrol import MDCheckbox
 from kivymd.uix.label import MDLabel
 
 
-#Clasa pentru To Do listuri
+
 
 class TodoScreen(MDScreen):
     """
@@ -31,10 +31,10 @@ class TodoScreen(MDScreen):
     add new tasks, and mark tasks as completed or in progress.
     """
 
-    def __init__(self, db_manager, **kwargs):
+    def __init__(self, task_services, **kwargs):
         """Initializes the To-Do screen and its UI components."""
         super().__init__(**kwargs)
-        self.db = db_manager
+        self.task_services = task_services
         self.selected_date = None
 
 
@@ -109,24 +109,17 @@ class TodoScreen(MDScreen):
 
 
     
-    def add_task(self, title, popup):
-        if title.strip():
-            self.db.add_task(title = title.strip())
-            self.refresh_tasks()
-            popup.dismiss()
-
-    
     def refresh_tasks(self):
         """
         Refreshes the task list for the selected date.
 
-        Fetches tasks from the database and updates the UI accordingly.
+        Fetches tasks from TaskService and updates the display.
         """
         self.task_list.clear_widgets()
         if not self.selected_date:
             return
         
-        tasks = self.db.get_tasks_by_date(self.selected_date)
+        tasks = self.task_services.get_tasks_by_date(self.selected_date)
         for task in tasks:
             row = MDBoxLayout(orientation='horizontal', spacing=10, size_hint_y=None, height="40dp")
 
@@ -172,32 +165,29 @@ class TodoScreen(MDScreen):
 
     def add_task(self, *args):
         """
-        Adds a new task for the selected date.
+        Handles adding a new task from the dialog.
 
-        Retrieves the task title from the dialog,
-        saves it to the database, and refreshes the UI.
+        Calls TaskService to add the task to the database,
+        dismisses the dialog, and refreshes the task list in the UI.
         """
         title = self.dialog.content_cls.ids.title.text
-        
-        if not title.strip():
-            return  
-        
-        self.db.add_task(title=title.strip(), deadline=self.selected_date)
-        self.dialog.dismiss()
-        self.refresh_tasks()
+        succes = self.task_services.add_task(title, self.selected_date)
+        if succes:
+            self.dialog.dismiss()
+            self.refresh_tasks()
 
 
     def mark_task_done(self, task_id, value):
         """
-        Updates the status of a task.
+        Updates task status via TaskService and refreshes UI.
 
         :param task_id: ID of the task
-        :param value: Checkbox state (True if completed)
+        :param value: True if task is completed
         """
         if value:
-            self.db.mark_task_done(task_id) 
+            self.task_services.mark_task_done(task_id) 
         else:
-            self.db.mark_task_in_progress(task_id)  
+            self.task_services.mark_task_in_progress(task_id)  
         self.refresh_tasks()
 
 

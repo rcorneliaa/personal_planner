@@ -1,11 +1,11 @@
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager
-from ui.todo_ui import TodoScreen
+from ui.screens.todo_ui import TodoScreen
 from db.db_manager import DatabaseManager
-from ui.main_window import StartScreen
-from ui.vacations.vacation_ui import VacationsScreen
-from ui.vacations.vacation_details_ui import VacationDetailScreen
-
+from ui.screens.main_window import StartScreen
+from ui.screens.vacation_ui import VacationsScreen
+from ui.screens.vacation_details_ui import VacationDetailScreen
+from services.task_services import TaskServices
 
 class PersonalPlannerApp(MDApp):
     """
@@ -30,11 +30,12 @@ class PersonalPlannerApp(MDApp):
 
         self.db = DatabaseManager()
         self.db.initialize_database()
+        self.task_services = TaskServices(self.db)
 
         self.sm = ScreenManager()
 
         self.sm.add_widget(StartScreen(name="start"))
-        self.sm.add_widget(TodoScreen(self.db, name="todo"))
+        self.sm.add_widget(TodoScreen(self.task_services,  name="todo"))
         self.sm.add_widget(VacationsScreen(self.db, name = "vacations"))
         self.sm.add_widget(VacationDetailScreen(self.db, name ="vacation_details"))
     

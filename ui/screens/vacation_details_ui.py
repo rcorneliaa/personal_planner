@@ -21,8 +21,7 @@ from kivymd.uix.textfield import MDTextField
 from kivy.uix.scrollview import ScrollView
 
 from kivy.clock import Clock
-from models.vacation import ActivityCard
-
+from ui.components.activity_card import ActivityCard
 from kivymd.app import MDApp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.navigationrail import (
