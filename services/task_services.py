@@ -16,7 +16,7 @@ class TaskServices:
         :return: True if the task was added successfully, False otherwise
         """
         if not title.strip():
-            return  False
+            return  False, "You need to add a title for the task!"
         self.db.add_task(title=title.strip(), deadline=date)
         return True
         

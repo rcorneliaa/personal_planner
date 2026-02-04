@@ -12,14 +12,14 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.toolbar import MDTopAppBar
 from kivymd.uix.navigationrail import MDNavigationRail, MDNavigationRailItem
 from kivymd.uix.label import MDLabel
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from kivymd.uix.button import MDRaisedButton
 from kivymd.uix.button import MDRectangleFlatButton
 from kivymd.uix.pickers.timepicker import MDTimePicker
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.textfield import MDTextField
 from kivy.uix.scrollview import ScrollView
-
+from kivy.animation import Animation
 from kivy.clock import Clock
 from ui.components.activity_card import ActivityCard
 from kivymd.app import MDApp
@@ -32,8 +32,7 @@ from kivymd.uix.navigationrail import (
    
 )
 from kivymd.uix.screen import MDScreen
-
-
+from kivymd.toast import toast
 
 
 class VacationDetailScreen(MDScreen):
@@ -44,9 +43,9 @@ class VacationDetailScreen(MDScreen):
     daily activities, including time selection and notes.
     """
 
-    def __init__(self, db_manager, **kwargs):
+    def __init__(self, activities_services, **kwargs):
         super().__init__(**kwargs)
-        self.db = db_manager
+        self.activities_services = activities_services
 
         self.main_layout = MDBoxLayout(orientation = "vertical")
     
@@ -144,19 +143,56 @@ class VacationDetailScreen(MDScreen):
         )
         self.detail_container.add_widget(MDLabel(text=f"Day {day} details", halign="center"))
         day_date = self.start_date + timedelta(days=day - 1)
-        activities = self.db.get_activities(self.vacation.id, day_date.isoformat())
+        activities = self.activities_services.get_activities(self.vacation.id, day_date.isoformat())
 
         for act in activities:
-            card = ActivityCard(act, db = self.db, screen= self)
+            card = ActivityCard(act, on_delete= self.handle_delete_activity, on_edit= self.handle_edit_activity)
             self.detail_container.add_widget(card)
             
         self.detail_container.add_widget(self.add_activity_btn)
         self.detail_container.bind(minimum_height=self.detail_container.setter('height'))
 
-    def show_details_dialog(self, *args):
+    def handle_delete_activity(self, activity_id, card):
+        success, error = self.activities_services.delete_activity(activity_id)
+
+        if not success:
+            toast(error)
+            return
+
+        anim = Animation(opacity=0, duration=0.2)
+        anim.bind(
+            on_complete=lambda *a: self.detail_container.remove_widget(card)
+        )
+        anim.start(card)
+
+    def handle_edit_activity(self, activity):
+        self.show_details_dialog(edit_mode=True, activity=activity)
+
+    
+    def update_activity(self, activity):
+        success, error = self.activities_services.update_activity(
+        activity_id=activity.id,
+        start_time=self.start_time.strftime("%H:%M"),
+        end_time=self.end_time.strftime("%H:%M"),
+        activity=self.activity.text,
+        location=self.location.text,
+        notest=self.notest.text,
+    )
+
+        if not success:
+            toast(error)
+            return
+
+        self.activity_dialog.dismiss()
+        self.show_day_details(self.current_day)
+
+    def show_details_dialog(self, edit_mode = False, activity = None):
         """
         Opens a dialog for adding a new activity.
         """
+
+        
+
         content = MDBoxLayout(
             orientation="vertical",
             spacing=20,
@@ -183,14 +219,27 @@ class VacationDetailScreen(MDScreen):
         self.notest = MDTextField(hint_text = "Details", id = "notest")
         content.add_widget(self.notest)
 
+        if edit_mode and activity:
+            self.activity.text = activity.activity
+            self.location.text = activity.location or ""
+            self.notest.text = activity.notest or ""
+            self.start_time = datetime.strptime(activity.start_time, "%H:%M").time()
+            self.end_time = datetime.strptime(activity.end_time, "%H:%M").time()
 
+        title = "Edit activity" if edit_mode else "Add activity"
+        button_text = "Save" if edit_mode else "Add"
+        button_action = (
+            lambda x: self.update_activity(activity)
+            if edit_mode
+            else self.add_activity
+        )
         self.activity_dialog = MDDialog(
-            title = "Add activity",
+            title = title,
             type = "custom",
             content_cls = content,
             buttons=[
                 MDRaisedButton(text="Cancel", on_release=lambda x: self.activity_dialog.dismiss()),
-                MDRaisedButton(text="Add", on_release=self.add_activity)
+                MDRaisedButton(text=button_text, on_release=button_action)
             ]
 
         )
@@ -235,23 +284,23 @@ class VacationDetailScreen(MDScreen):
         Saves a new activity to the database
         and refreshes the current day view.
         """
-        activity = self.activity.text
-        location = self.location.text
-        notest  = self.notest.text
-        vacation_id = self.vacation.id
+        
         day_number = self.current_day
         day =  self.start_date + timedelta(days=day_number - 1)   
 
-        self.db.add_activity(
-        vacation_id=vacation_id,
+        success, error = self.activities_services.add_activity(
+        vacation_id=self.vacation.id,
         day=day.isoformat(),
         start_time=self.start_time.strftime("%H:%M"),
         end_time=self.end_time.strftime("%H:%M"),
-        activity=activity,
-        location=location,
-        notest=notest,
+        activity=self.activity.text,
+        location=self.location.text,
+        notest=self.notest.text,
                
     )   
+        if not success:
+            toast(error)
+            return
         self.activity_dialog.dismiss()
         self.show_day_details(self.current_day)
 

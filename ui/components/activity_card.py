@@ -4,7 +4,7 @@ from kivy.metrics import dp
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.button import MDIconButton, MDRaisedButton
 from kivymd.uix.dialog import MDDialog
-from kivy.animation import Animation
+
 
 class ActivityCard(MDCard):
     """
@@ -15,7 +15,7 @@ class ActivityCard(MDCard):
     - Delete functionality with confirmation dialog
     """
 
-    def __init__(self, activity_data, db = None, screen = None, **kwargs):
+    def __init__(self, activity_data, on_delete = None, on_edit = None, **kwargs):
         """
         Initializes an activity card.
 
@@ -25,8 +25,8 @@ class ActivityCard(MDCard):
         """
         super().__init__(**kwargs)
         self.activity_data = activity_data
-        self.db = db
-        self.screen = screen
+        self.on_delete = on_delete
+        self.on_edit = on_edit
         self.orientation = "vertical"
         self.size_hint = (0.9, None)
         self.height = dp(140)
@@ -55,6 +55,16 @@ class ActivityCard(MDCard):
                 # text_color=(0.6, 0, 0, 1),
                 pos_hint={"center_y": 0.5},
                 on_release=self.confirm_delete,
+            )
+        )
+
+        header.add_widget(
+            MDIconButton(
+                icon="pencil",
+                # theme_text_color="Custom",
+                # text_color=(0.6, 0, 0, 1),
+                pos_hint={"center_y": 0.5},
+                on_release=self.edit_activity,
             )
         )
 
@@ -108,30 +118,13 @@ class ActivityCard(MDCard):
         Deletes the activity from the database and removes the card with animation.
         """
         self.confirm_dialog.dismiss()
-        if self.db:
-            success = self.db.delete_activity(self.activity_data.id)
-        else:
-            success = True 
+        if self.on_delete:
+            self.on_delete(self.activity_data.id, self)
+        
+        
 
-        if success:
-            anim = Animation(opacity=0, duration=0.2)
-            anim.bind(on_complete=lambda *a: self.remove_from_parent())
-            anim.start(self)
 
-    def remove_from_parent(self):
-        """
-        Removes the card from its parent layout.
-        """
-        if self.parent and self.screen:
-            self.parent.remove_widget(self)
-
-    # def edit_activity(self, *args):
+    def edit_activity(self, *args):
     
-    #     if not self.parent_screen:
-    #         return
-
-    #     self.parent_screen.show_details_dialog(
-    #         edit_mode=True,
-    #         existing_activity=self.activity,
-    #         card=self
-    #     )
+        if self.on_edit:
+            self.on_edit(self.activity_data)

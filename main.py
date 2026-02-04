@@ -7,6 +7,7 @@ from ui.screens.vacation_ui import VacationsScreen
 from ui.screens.vacation_details_ui import VacationDetailScreen
 from services.task_services import TaskServices
 from services.vacation_services import VacationServices
+from services.activity_services import ActivityServices
 
 class PersonalPlannerApp(MDApp):
     """
@@ -33,13 +34,14 @@ class PersonalPlannerApp(MDApp):
         self.db.initialize_database()
         self.task_services = TaskServices(self.db)
         self.vacation_services = VacationServices(self.db)
+        self.activities_services = ActivityServices(self.db)
 
         self.sm = ScreenManager()
 
         self.sm.add_widget(StartScreen(name="start"))
         self.sm.add_widget(TodoScreen(self.task_services,  name="todo"))
         self.sm.add_widget(VacationsScreen(self.vacation_services, name = "vacations"))
-        self.sm.add_widget(VacationDetailScreen(self.db, name ="vacation_details"))
+        self.sm.add_widget(VacationDetailScreen(self.activities_services, name ="vacation_details"))
     
        
 

@@ -168,5 +168,13 @@ class DatabaseManager:
         return True
 
 
+    def update_activity(self, activity_id, start_time, end_time, activity, location, notest):
+        self.conn.execute("""
+            UPDATE itineraries
+            SET start_time=?, end_time=?, activity=?, location=?, notest=?
+            WHERE id=?
+        """, (start_time, end_time, activity, location, notest, activity_id))
+        self.conn.commit()
+
     
     
