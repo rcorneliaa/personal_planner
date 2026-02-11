@@ -1,13 +1,13 @@
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager
 from ui.screens.todo_ui import TodoScreen
-from db.db_manager import DatabaseManager
+from core.db.db_manager import DatabaseManager
 from ui.screens.main_window import StartScreen
 from ui.screens.vacation_ui import VacationsScreen
 from ui.screens.vacation_details_ui import VacationDetailScreen
-from services.task_services import TaskServices
-from services.vacation_services import VacationServices
-from services.activity_services import ActivityServices
+from core.services.task_services import TaskServices
+from core.services.vacation_services import VacationServices
+from core.services.activity_services import ActivityServices
 
 class PersonalPlannerApp(MDApp):
     """

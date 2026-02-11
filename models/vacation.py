@@ -1,10 +1,3 @@
-from kivymd.uix.card import MDCard
-from kivymd.uix.label import MDLabel
-from kivy.metrics import dp
-from kivymd.uix.boxlayout import MDBoxLayout
-from kivymd.uix.button import MDIconButton, MDRaisedButton
-from kivymd.uix.dialog import MDDialog
-from kivy.animation import Animation
 
 class Vacation:
     """
