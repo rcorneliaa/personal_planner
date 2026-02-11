@@ -108,6 +108,13 @@ class DatabaseManager:
         )
         self.conn.commit()
 
+    def delete_task(self, task_id):
+        self.conn.execute(
+            "DELETE FROM tasks WHERE id = ?",
+            (task_id,)
+        )
+        self.conn.commit()
+
 
      # ============================= VACATION MANAGEMENT =============================
 

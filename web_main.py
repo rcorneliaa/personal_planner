@@ -38,4 +38,13 @@ def add_task(task: Task):
     succes = task_services.add_task(task.title, task.date)
     if succes:
         return {"message": "Task Added!"}
-    
+
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id):
+    task_services.delete_task(task_id)
+    return {"message": "Task Deleted!"}
+
+@app.put("/tasks/{task_id}")
+def mark_task_done(task_id):
+    task_services.mark_task_done(task_id)
+    return {"massage": "Done!"}

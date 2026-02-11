@@ -28,3 +28,6 @@ class TaskServices:
 
     def get_tasks_by_date(self, date):
         return self.db.get_tasks_by_date(date)
+    
+    def delete_task(self, task_id):
+        self.db.delete_task(task_id)
