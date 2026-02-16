@@ -22,10 +22,14 @@ function HomePage(){
       <p className="text-xl text-gray-700 mb-8 text-center">
         Organize your tasks and vacations with ease!
       </p>
+          <div className="flex gap-20">
             <button onClick={()=> navigate("/todo")}
                 className="bg-violet-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition-colors">To-DO
                 </button>
-
+            <button onClick={()=> navigate("/vacations")}
+                className="bg-violet-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition-colors">Vacations
+                </button>
+          </div>
         </div>
     );
 }
