@@ -1,3 +1,4 @@
+from datetime import timedelta
 import psycopg2
 import os
 from psycopg2.extras import RealDictCursor
@@ -11,53 +12,108 @@ load_dotenv()
 class DatabaseManager:
     """
     Handles all database operations for the application.
-
-    Responsibilities:
-    - Database initialization
-    - CRUD operations for tasks, vacations and itineraries
     """
 
-    def __init__(self, db_url = None):
+    def __init__(self, db_url=None):
         """
         Initializes the database connection.
-
-        :param db_path: Path to SQLite database file
         """
         if db_url is None:
             db_url = os.getenv("DATABASE_URL", "postgresql://localhost:6543/postgres")
         
         self.conn = psycopg2.connect(db_url)
-       
-        self.conn.cursor_factory = RealDictCursor
-       
+        # NU mai păstrăm un cursor la nivel de clasă!
+
+    def _execute_query(self, query, params=None, fetch_one=False, fetch_all=False, dict_cursor=False):
+        """
+        Helper method pentru executarea interogărilor SQL cu gestionarea erorilor.
+        
+        :param query: SQL query string
+        :param params: Parametri pentru query (tuple)
+        :param fetch_one: Dacă True, returnează un singur rând
+        :param fetch_all: Dacă True, returnează toate rândurile
+        :param dict_cursor: Dacă True, folosește RealDictCursor
+        :return: Rezultatul interogării sau None
+        """
+        cursor = None
+        try:
+            # Creăm cursorul cu sau fără dict factory
+            if dict_cursor:
+                cursor = self.conn.cursor(cursor_factory=RealDictCursor)
+            else:
+                cursor = self.conn.cursor()
+            
+            # Executăm query-ul
+            cursor.execute(query, params or ())
+            
+            # Obținem rezultatele dacă e cazul
+            result = None
+            if fetch_one:
+                result = cursor.fetchone()
+            elif fetch_all:
+                result = cursor.fetchall()
+            
+            # Commit pentru operații care modifică datele
+            # (pentru SELECT nu face rău, e ignorat)
+            self.conn.commit()
+            
+            return result
+            
+        except Exception as e:
+            # Rollback în caz de eroare
+            self.conn.rollback()
+            print(f"Eroare SQL: {e}")
+            print(f"Query: {query}")
+            print(f"Params: {params}")
+            raise e
+            
+        finally:
+            # Închidem cursorul
+            if cursor:
+                cursor.close()
 
     def initialize_database(self):
         """
         Creates database tables if they do not already exist.
         """
-        cursor = self.conn.cursor()
-        cursor.execute("""
+        # Creare tabele
+        self._execute_query("""
             CREATE TABLE IF NOT EXISTS tasks(
                 id SERIAL PRIMARY KEY,
                 title TEXT NOT NULL,
                 date TEXT NOT NULL,
                 status TEXT DEFAULT 'in progress'
-                 
-                )
-          """)
+            )
+        """)
         
-
-        cursor.execute("""
+        self._execute_query("""
+            CREATE TABLE IF NOT EXISTS habits(
+                id SERIAL PRIMARY KEY,
+                title TEXT NOT NULL,
+                goal INTEGER
+            )
+        """)
+        
+        self._execute_query("""
+            CREATE TABLE IF NOT EXISTS habit_logs(
+                id SERIAL PRIMARY KEY,
+                habit_id INTEGER REFERENCES habits(id) ON DELETE CASCADE,
+                log_date DATE NOT NULL,
+                status BOOLEAN DEFAULT false,
+                UNIQUE (habit_id, log_date)
+            )
+        """)
+        
+        self._execute_query("""
             CREATE TABLE IF NOT EXISTS vacations(
                 id SERIAL PRIMARY KEY,
                 destination TEXT NOT NULL,
                 start_date TEXT NOT NULL,
                 end_date TEXT NOT NULL
-                 
-                )
-          """)
+            )
+        """)
         
-        cursor.execute("""
+        self._execute_query("""
             CREATE TABLE IF NOT EXISTS itineraries(
                 id SERIAL PRIMARY KEY,
                 vacation_id INTEGER REFERENCES vacations(id) ON DELETE CASCADE,
@@ -67,132 +123,213 @@ class DatabaseManager:
                 activity TEXT,
                 location TEXT,
                 notest TEXT NULL
-                )
-          """)
-        self.conn.commit()
+            )
+        """)
+        
+        # Încercăm să convertim coloana date la tip DATE
+        try:
+            self._execute_query("""
+                ALTER TABLE tasks
+                ALTER COLUMN date TYPE DATE
+                USING date::DATE
+            """)
+        except Exception:
+            pass  # Ignorăm dacă nu se poate (probabil e deja convertit)
 
     # ============================= TASK MANAGEMENT =============================
 
-    def add_task(self, title, deadline = None):
+    def add_task(self, title, date):
         """
         Adds a new task to the database.
-
-        :param title: Task title
-        :param deadline: Task date (YYYY-MM-DD)
         """
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            INSERT INTO tasks (title, date)
-            VALUES(%s, %s)
-        """, (title, deadline))
-        self.conn.commit()
+        self._execute_query(
+            "INSERT INTO tasks (title, date) VALUES(%s, %s)",
+            (title, date)
+        )
 
-       
-
-    
     def get_tasks_by_date(self, date):
         """
         Retrieves tasks for a specific date.
-
-        :param date: Date string (YYYY-MM-DD)
-        :return: List of Task objects
         """
-        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
         if date:
-          cursor.execute("SELECT * FROM tasks WHERE date = %s", (date,))
+            rows = self._execute_query(
+                "SELECT * FROM tasks WHERE date = %s",
+                (date,),
+                fetch_all=True,
+                dict_cursor=True
+            )
         else:
-          cursor.execute("SELECT * FROM tasks")
-        rows = cursor.fetchall()
-        return [Task(**row) for row in rows]
-    
+            rows = self._execute_query(
+                "SELECT * FROM tasks",
+                fetch_all=True,
+                dict_cursor=True
+            )
+        
+        return [Task(**row) for row in rows] if rows else []
 
     def mark_task_done(self, task_id):
         """
         Marks a task as completed.
-
-        :param task_id: ID of the task
         """
-        cursor = self.conn.cursor()
-        cursor.execute(
+        self._execute_query(
             "UPDATE tasks SET status = 'done' WHERE id = %s",
             (task_id,)
         )
-        self.conn.commit()
 
     def delete_task(self, task_id):
-        cursor = self.conn.cursor()
-        cursor.execute(
+        """
+        Deletes a task.
+        """
+        self._execute_query(
             "DELETE FROM tasks WHERE id = %s",
             (task_id,)
         )
-        self.conn.commit()
 
+    # ============================= HABITS MANAGEMENT =============================
 
-     # ============================= VACATION MANAGEMENT =============================
+    def add_habit(self, title, goal):
+        """
+        Adds a new habit.
+        """
+        self._execute_query(
+            "INSERT INTO habits(title, goal) VALUES(%s, %s)",
+            (title, goal)
+        )
+
+    def delete_habit(self, habit_id):
+        """
+        Deletes a habit.
+        """
+        self._execute_query(
+            "DELETE FROM habits WHERE id = %s",
+            (habit_id,)
+        )
+
+    def get_weekly_habits(self, week_start):
+        """
+        Retrieves habits with their logs for a specific week.
+        """
+        week_end = week_start + timedelta(days=6)
+        
+        rows = self._execute_query("""
+            SELECT h.id, h.title, h.goal as weekly_goal,
+                   hl.log_date, hl.status
+            FROM habits h
+            LEFT JOIN habit_logs hl ON h.id = hl.habit_id
+                AND hl.log_date BETWEEN %s AND %s
+            ORDER BY h.id, hl.log_date
+        """, (week_start, week_end), fetch_all=True, dict_cursor=True)
+        
+        habits_dict = {}
+        for row in rows:
+            hid = row["id"]
+            if hid not in habits_dict:
+                logs = {}
+                for i in range(7):
+                    day = week_start + timedelta(days=i)
+                    logs[day.isoformat()] = False
+                habits_dict[hid] = {
+                    "id": hid,
+                    "title": row["title"],
+                    "weekly_goal": row["weekly_goal"],
+                    "logs": logs
+                }
+            if row["log_date"]:
+                habits_dict[hid]["logs"][row["log_date"]] = row["status"]
+        
+        return list(habits_dict.values())
+
+    def toggle_day(self, habit_id, day):
+        """
+        Toggles a habit log for a specific day.
+        """
+        # Verificăm dacă există deja un log pentru această zi
+        result = self._execute_query(
+            "SELECT id FROM habit_logs WHERE habit_id = %s AND log_date = %s",
+            (habit_id, day),
+            fetch_one=True
+        )
+        
+        if result:
+            # Dacă există, îl ștergem
+            self._execute_query(
+                "DELETE FROM habit_logs WHERE id = %s",
+                (result[0],)
+            )
+        else:
+            # Dacă nu există, îl creăm cu status TRUE
+            self._execute_query(
+                "INSERT INTO habit_logs(habit_id, log_date, status) VALUES(%s, %s, TRUE)",
+                (habit_id, day)
+            )
+
+    # ============================= VACATION MANAGEMENT =============================
 
     def add_vacation(self, destination, start_date, end_date):
         """
         Adds a new vacation to the database.
         """
-        cursor = self.conn.cursor()
-        cursor.execute("""
-                INSERT INTO vacations(destination, start_date, end_date) VALUES (%s, %s, %s)
-                          """, (destination, start_date, end_date))
-        self.conn.commit()
-       
-    
+        self._execute_query(
+            "INSERT INTO vacations(destination, start_date, end_date) VALUES (%s, %s, %s)",
+            (destination, start_date, end_date)
+        )
+
     def get_vacations(self):
         """
         Retrieves all vacations.
-
-        :return: List of Vacation objects
         """
-        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT * FROM vacations")
-        rows = cursor.fetchall()
-        return [Vacation(**row) for row in rows]
-    
-
+        rows = self._execute_query(
+            "SELECT * FROM vacations",
+            fetch_all=True,
+            dict_cursor=True
+        )
+        
+        return [Vacation(**row) for row in rows] if rows else []
 
     # ============================= ITINERARY MANAGEMENT =============================
+
     def add_activity(self, vacation_id, day, start_time, end_time, activity, location=None, notest=None):
-        cursor = self.conn.cursor()
-        cursor.execute("""
+        """
+        Adds an activity to a vacation itinerary.
+        """
+        self._execute_query("""
             INSERT INTO itineraries(vacation_id, day, start_time, end_time, activity, location, notest) 
             VALUES (%s, %s, %s, %s, %s, %s, %s)
         """, (vacation_id, day, start_time, end_time, activity, location, notest))
-        self.conn.commit()
-        
 
     def get_activities(self, vacation_id, day):
-        cursor = self.conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("""
+        """
+        Retrieves activities for a specific vacation day.
+        """
+        rows = self._execute_query("""
             SELECT id, vacation_id, day, start_time, end_time, activity, location, notest 
             FROM itineraries 
-            WHERE vacation_id=%s AND day=%s
-        """, (vacation_id, day))
-        rows = cursor.fetchall()
-        return [Itinerary(**row) for row in rows]
+            WHERE vacation_id = %s AND day = %s
+        """, (vacation_id, day), fetch_all=True, dict_cursor=True)
+        
+        return [Itinerary(**row) for row in rows] if rows else []
 
     def delete_activity(self, activity_id):
-        cursor = self.conn.cursor()
-        cursor.execute("DELETE FROM itineraries WHERE id=%s", (activity_id,))
-        self.conn.commit()
+        """
+        Deletes an activity.
+        """
+        self._execute_query(
+            "DELETE FROM itineraries WHERE id = %s",
+            (activity_id,)
+        )
         return True
 
     def update_activity(self, activity_id, start_time, end_time, activity, location, notest):
-        cursor = self.conn.cursor()
-        cursor.execute("""
+        """
+        Updates an activity.
+        """
+        self._execute_query("""
             UPDATE itineraries
-            SET start_time=%s, end_time=%s, activity=%s, location=%s, notest=%s
-            WHERE id=%s
+            SET start_time = %s, end_time = %s, activity = %s, location = %s, notest = %s
+            WHERE id = %s
         """, (start_time, end_time, activity, location, notest, activity_id))
-        self.conn.commit()
 
     def close(self):
-        """Închide conexiunea la baza de date"""
+        """Closes the database connection."""
         if self.conn:
             self.conn.close()
-
-    
-    

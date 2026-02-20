@@ -103,7 +103,7 @@ class TodoScreen(MDScreen):
         :param value: Selected date
         :param date_range: Optional date range (unused)
         """
-        self.selected_date = str(value)
+        self.selected_date = value
         self.date_btn.text = f"Ziua: {self.selected_date}"
         self.refresh_tasks()
 

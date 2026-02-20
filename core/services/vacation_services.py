@@ -1,6 +1,9 @@
+from core.services.location_services import LocationServices
+
 class VacationServices:
     def __init__(self, db_manager):
         self.db = db_manager
+        self.location_services = LocationServices()
 
     def add_vacation(self, destination, start_date, end_date):
         

@@ -17,7 +17,7 @@ class TaskServices:
         """
         if not title.strip():
             return  False, "You need to add a title for the task!"
-        self.db.add_task(title=title.strip(), deadline=date)
+        self.db.add_task(title=title.strip(), date=date)
         return True
         
     def mark_task_done(self, task_id):
@@ -31,3 +31,18 @@ class TaskServices:
     
     def delete_task(self, task_id):
         self.db.delete_task(task_id)
+
+    def add_habit(self, title, goal):
+        if not title.strip():
+            return  False, "You need to add a title for the habit!"
+        self.db.add_habit(title=title.strip(), goal=goal)
+        return True
+    
+    def delete_habit(self, habit_id):
+        self.db.delete_habit(habit_id)
+
+    def get_habits(self, week_start):
+        return self.db.get_weekly_habits(week_start)
+    
+    def toggle_day(self, habit_id, day):
+        self.db.toggle_day(habit_id, day)
