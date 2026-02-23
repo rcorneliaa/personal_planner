@@ -38,31 +38,12 @@ function TodoPage() {
     });
   }
 
-  function transformHabits(rows) {
-    const habitsMap = {};
-    rows.forEach((row) => {
-      if (!habitsMap[row.id]) {
-        habitsMap[row.id] = {
-          id: row.id,
-          title: row.title,
-          weekly_goal: row.weekly_goal,
-          logs: {},
-        };
-      }
 
-      if (row.log_date) {
-        // convertim log_date la YYYY-MM-DD
-        const date = row.log_date.split("T")[0];
-        habitsMap[row.id].logs[date] = row.status;
-      }
-    });
-
-    return Object.values(habitsMap);
-  }
+  
 
   const weekStart = getWeekStart(selectedDate);
   const weekDays = getWeekDays();
-
+ 
   // ================= TASKS =================
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/tasks?date=${selectedDate}`)
@@ -104,7 +85,9 @@ function TodoPage() {
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/habits/?week_start=${weekStart}`)
       .then((res) => res.json())
-      .then((data) => setHabits(transformHabits(data)));
+      .then((data) => {
+        console.log("raw habits data:", data);
+        setHabits(data)});
   }, [weekStart]);
 
   const addHabit = () => {
@@ -121,7 +104,7 @@ function TodoPage() {
         const ws = getWeekStart(selectedDate);
         fetch(`http://127.0.0.1:8000/habits/?week_start=${ws}`)
           .then((res) => res.json())
-          .then((data) => setHabits(transformHabits(data)));
+          .then((data) => setHabits(data));
       });
   };
 
@@ -198,7 +181,7 @@ function TodoPage() {
               </span>
             </div>
             <TrashIcon
-              className="w-5 h-5 text-violet-500 cursor-pointer"
+              className="w-5 h-5 fill-violet-500 cursor-pointer"
               onClick={() => deleteTask(task.id)}
             />
           </li>
@@ -249,6 +232,8 @@ function TodoPage() {
         </thead>
         <tbody>
           {habits.map((habit) => {
+            console.log("habit logs keys:", Object.keys(habit.logs));
+            console.log("habit logs values:", Object.values(habit.logs));
             const achieved = Object.values(habit.logs || {}).filter(Boolean)
               .length;
 
@@ -273,12 +258,10 @@ function TodoPage() {
                 <td className="border p-1">{habit.weekly_goal}</td>
                 <td className="border p-1">{achieved}</td>
                 <td className="border p-1">
-                  <button
-                    className="text-red-500 hover:underline"
+                  <TrashIcon
+                    className="w-5 h-5 fill-purple-500 cursor-pointer mx-auto"
                     onClick={() => deleteHabit(habit.id)}
-                  >
-                    Delete
-                  </button>
+                  />
                 </td>
               </tr>
             );
