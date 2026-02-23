@@ -201,7 +201,7 @@ class DatabaseManager:
         Deletes a habit.
         """
         self._execute_query(
-            "DELETE FROM habits WHERE id = %s",
+            "UPDATE habits SET active = FALSE WHERE id = %s",
             (habit_id,)
         )
 
@@ -217,6 +217,7 @@ class DatabaseManager:
             FROM habits h
             LEFT JOIN habit_logs hl ON h.id = hl.habit_id
                 AND hl.log_date BETWEEN %s AND %s
+            WHERE h.active = TRUE OR hl.log_date IS NOT NULL
             ORDER BY h.id, hl.log_date
         """, (week_start, week_end), fetch_all=True, dict_cursor=True)
         
@@ -333,3 +334,5 @@ class DatabaseManager:
         """Closes the database connection."""
         if self.conn:
             self.conn.close()
+
+    
