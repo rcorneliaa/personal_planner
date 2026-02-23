@@ -9,10 +9,7 @@ function TodoPage() {
   const [newHabit, setNewHabit] = useState("");
   const [weeklyGoal, setWeeklyGoal] = useState(0);
 
-  // 🔹 calculează mereu weekStart din selectedDate
-  const weekStart = getWeekStart(selectedDate);
-
-  // 🔹 helper pt format YYYY-MM-DD fără timezone issues
+  // ================= HELPERS =================
   function formatDateLocal(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -40,26 +37,30 @@ function TodoPage() {
       };
     });
   }
- function transformHabits(rows) {
-  const habitsMap = {};
 
-  rows.forEach(row => {
-    if (!habitsMap[row.id]) {
-      habitsMap[row.id] = {
-        id: row.id,
-        title: row.title,
-        weekly_goal: row.weekly_goal,
-        logs: {}
-      };
-    }
+  function transformHabits(rows) {
+    const habitsMap = {};
+    rows.forEach((row) => {
+      if (!habitsMap[row.id]) {
+        habitsMap[row.id] = {
+          id: row.id,
+          title: row.title,
+          weekly_goal: row.weekly_goal,
+          logs: {},
+        };
+      }
 
-    if (row.log_date) {
-      habitsMap[row.id].logs[row.log_date] = row.status;
-    }
-  });
+      if (row.log_date) {
+        // convertim log_date la YYYY-MM-DD
+        const date = row.log_date.split("T")[0];
+        habitsMap[row.id].logs[date] = row.status;
+      }
+    });
 
-  return Object.values(habitsMap);
-}
+    return Object.values(habitsMap);
+  }
+
+  const weekStart = getWeekStart(selectedDate);
   const weekDays = getWeekDays();
 
   // ================= TASKS =================
@@ -89,12 +90,13 @@ function TodoPage() {
   };
 
   const markDone = (taskId) => {
-    fetch(`http://127.0.0.1:8000/tasks/${taskId}`, { method: "PUT" }).then(() =>
-      setTasks(
-        tasks.map((task) =>
-          task.id === taskId ? { ...task, status: "done" } : task
+    fetch(`http://127.0.0.1:8000/tasks/${taskId}`, { method: "PUT" }).then(
+      () =>
+        setTasks(
+          tasks.map((task) =>
+            task.id === taskId ? { ...task, status: "done" } : task
+          )
         )
-      )
     );
   };
 
@@ -103,9 +105,7 @@ function TodoPage() {
     fetch(`http://127.0.0.1:8000/habits/?week_start=${weekStart}`)
       .then((res) => res.json())
       .then((data) => setHabits(transformHabits(data)));
-  }, [selectedDate]);
-
- 
+  }, [weekStart]);
 
   const addHabit = () => {
     fetch("http://127.0.0.1:8000/habits", {
@@ -113,17 +113,17 @@ function TodoPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: newHabit, goal: weeklyGoal }),
     })
-      .then(res => res.json())
-  .then(() => {
-    setNewHabit("");
-    setWeeklyGoal(0);
+      .then((res) => res.json())
+      .then(() => {
+        setNewHabit("");
+        setWeeklyGoal(0);
 
-    const ws = getWeekStart(selectedDate);
-    fetch(`http://127.0.0.1:8000/habits/?week_start=${ws}`)
-      .then(res => res.json())
-      .then(data => setHabits(transformHabits(data)));
-  });
-};
+        const ws = getWeekStart(selectedDate);
+        fetch(`http://127.0.0.1:8000/habits/?week_start=${ws}`)
+          .then((res) => res.json())
+          .then((data) => setHabits(transformHabits(data)));
+      });
+  };
 
   const deleteHabit = (habitId) => {
     fetch(`http://127.0.0.1:8000/habits/${habitId}`, { method: "DELETE" }).then(
@@ -191,9 +191,7 @@ function TodoPage() {
               />
               <span
                 className={
-                  task.status === "done"
-                    ? "line-through text-gray-500"
-                    : ""
+                  task.status === "done" ? "line-through text-gray-500" : ""
                 }
               >
                 {task.title}
@@ -258,23 +256,27 @@ function TodoPage() {
               <tr key={habit.id}>
                 <td className="border p-1">{habit.title}</td>
 
-                {weekDays.map((d, i) => (
-                  <td
-                    key={i}
-                    onClick={() => toggleDay(habit.id, d.date)}
-                    className="border p-1 cursor-pointer"
-                    style={{
-                      backgroundColor: habit.logs?.[d.date]
-                        ? "violet"
-                        : "white",
-                    }}
-                  ></td>
-                ))}
+                {weekDays.map((d, i) => {
+                  const isDone = !!habit.logs?.[d.date];
+
+                  return (
+                    <td
+                      key={i}
+                      onClick={() => toggleDay(habit.id, d.date)}
+                      className={`border p-1 cursor-pointer ${
+                        isDone ? "bg-violet-500" : "bg-white"
+                      }`}
+                    ></td>
+                  );
+                })}
 
                 <td className="border p-1">{habit.weekly_goal}</td>
                 <td className="border p-1">{achieved}</td>
                 <td className="border p-1">
-                  <button onClick={() => deleteHabit(habit.id)}>
+                  <button
+                    className="text-red-500 hover:underline"
+                    onClick={() => deleteHabit(habit.id)}
+                  >
                     Delete
                   </button>
                 </td>

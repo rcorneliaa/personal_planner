@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 import psycopg2
 import os
 from psycopg2.extras import RealDictCursor
@@ -206,39 +206,43 @@ class DatabaseManager:
         )
 
     def get_weekly_habits(self, week_start):
-        """
-        Retrieves habits with their logs for a specific week.
-        """
         week_end = week_start + timedelta(days=6)
         
         rows = self._execute_query("""
             SELECT h.id, h.title, h.goal as weekly_goal,
-                   hl.log_date, hl.status
+                hl.log_date, hl.status
             FROM habits h
-            LEFT JOIN habit_logs hl ON h.id = hl.habit_id
+            LEFT JOIN habit_logs hl 
+                ON h.id = hl.habit_id
                 AND hl.log_date BETWEEN %s AND %s
-            WHERE h.active = TRUE OR hl.log_date IS NOT NULL
+                AND hl.status = TRUE  -- adaugă asta
+            WHERE h.active = TRUE 
             ORDER BY h.id, hl.log_date
         """, (week_start, week_end), fetch_all=True, dict_cursor=True)
         
         habits_dict = {}
+        
         for row in rows:
             hid = row["id"]
             if hid not in habits_dict:
-                logs = {}
-                for i in range(7):
-                    day = week_start + timedelta(days=i)
-                    logs[day.isoformat()] = False
                 habits_dict[hid] = {
                     "id": hid,
                     "title": row["title"],
                     "weekly_goal": row["weekly_goal"],
-                    "logs": logs
+                    "logs": set()  # folosește set în loc de dict
                 }
-            if row["log_date"]:
-                habits_dict[hid]["logs"][row["log_date"]] = row["status"]
+            
+            if row["log_date"]:  # doar zilele cu True
+                log_day = row["log_date"].isoformat()
+                habits_dict[hid]["logs"].add(log_day)
         
-        return list(habits_dict.values())
+        # Transformă set-ul în dict pentru compatibilitate
+        result = []
+        for habit in habits_dict.values():
+            habit["logs"] = {day: True for day in habit["logs"]}
+            result.append(habit)
+        
+        return result
 
     def toggle_day(self, habit_id, day):
         """

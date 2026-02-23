@@ -5,6 +5,8 @@ This module defines the UI and logic for managing daily to-do tasks,
 including date selection, task creation, status updates, and navigation.
 """
 
+from datetime import timedelta
+from kivymd.uix.gridlayout import GridLayout
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import SlideTransition
 from kivymd.uix.screen import MDScreen
@@ -39,7 +41,10 @@ class TodoScreen(MDScreen):
 
 
         
-        main_layout = MDBoxLayout(orientation='vertical')
+        # Layout principal vertical
+        main_layout = MDBoxLayout(orientation='vertical', spacing=10, padding=10)
+
+        # Top bar
         top_bar = MDTopAppBar(
             title="To-Do List",
             left_action_items=[["arrow-left", lambda x: self.go_back()]],
@@ -47,40 +52,67 @@ class TodoScreen(MDScreen):
         )
         main_layout.add_widget(top_bar)
 
-                
+        # ScrollView pentru tot conținutul
+        scroll = MDScrollView()
+        content = MDBoxLayout(orientation='vertical', size_hint_y=None, spacing=20)
+        content.bind(minimum_height=content.setter('height'))  # face layout-ul scrollabil
+
+        # ================= DATE SELECTION =================
         self.date_btn = MDRaisedButton(
             text="Choose Day",
             size_hint=(None, None),
-            
             size=(150, 40),
             pos_hint={"center_x": 0.5},
             on_release=self.show_date_picker
         )
-        main_layout.add_widget(self.date_btn)
+        content.add_widget(self.date_btn)
 
+        # ================= TASKS =================
+        self.task_list = MDBoxLayout(orientation='vertical', spacing=5, size_hint_y=None)
+        self.task_list.bind(minimum_height=self.task_list.setter('height'))
+        content.add_widget(MDLabel(text="Tasks", halign="center", size_hint_y=None, height=40))
+        content.add_widget(self.task_list)
 
-        self.scroll = MDScrollView()
-        self.task_list = MDList()
-        self.scroll.add_widget(self.task_list)
-        main_layout.add_widget(self.scroll)
+        # Buton adaugare task
+        self.add_task_btn = MDRaisedButton(text="Add Task", size_hint_y=None, height=40)
+        self.add_task_btn.bind(on_release=self.show_add_task_dialog)
+        content.add_widget(self.add_task_btn)
 
-
-        
-        self.add_btn = MDRaisedButton(
-            icon="plus",
-            text="Add Task",    
-            pos_hint={"right": 0.97, "y": 0.02},
-            size_hint=(None, None),
-            height="48dp",
-            padding=("12dp", "10dp", "12dp", "10dp"),
-            on_release=self.show_add_task_dialog
+        # ================= HABITS =================
+        self.habits_title = MDLabel(
+            text="Habits (Weekly)",
+            halign="center",
+            theme_text_color="Primary",
+            size_hint_y=None,
+            height="40dp"
         )
-        self.add_btn.bind(on_release=self.show_add_task_dialog)
-        main_layout.add_widget(self.add_btn)
-        
+        content.add_widget(self.habits_title)
+
+        # Tabel habits (GridLayout pentru checkbox-uri și titluri)
+        self.habit_table = GridLayout(cols=9, size_hint_y=None, row_default_height=40, spacing=5)
+        self.habit_table.bind(minimum_height=self.habit_table.setter('height'))
+        content.add_widget(self.habit_table)
+
+        # Buton adaugare habit
+        self.add_habit_btn = MDRaisedButton(
+            text="Add Habit",
+            pos_hint={"center_x": 0.5},
+            size_hint_y=None,
+            height=40,
+            on_release=self.show_add_habit_dialog
+        )
+        content.add_widget(self.add_habit_btn)
+
+        # Adaugam tot continutul scrollabil
+        scroll.add_widget(content)
+        main_layout.add_widget(scroll)
+
+        # Adaugam layout-ul principal la ecran
         self.add_widget(main_layout)
 
+        # Refresh initial
         self.refresh_tasks()
+        self.refresh_habits()
 
 
     
@@ -106,6 +138,7 @@ class TodoScreen(MDScreen):
         self.selected_date = value
         self.date_btn.text = f"Ziua: {self.selected_date}"
         self.refresh_tasks()
+        self.refresh_habits()
 
 
     
@@ -190,6 +223,141 @@ class TodoScreen(MDScreen):
             self.task_services.mark_task_in_progress(task_id)  
         self.refresh_tasks()
 
+    def show_add_habit_dialog(self, *args):
+        """
+        Displays a dialog for adding a new habit.
+
+        Requires a date to be selected before allowing habit creation.
+        """
+        if not self.selected_date:
+            self.date_btn.text = "Choose a day!"
+            return
+        
+        content = MDBoxLayout(
+            orientation = "vertical",
+            spacing = 10,
+            size_hint_y = None,
+            height = "150dp"
+        )
+
+        self.habit_title_field = MDTextField(
+            hint_text = "Title",
+            size_hint_y = None,
+            height = "400dp"
+        )
+        self.habit_goal_field = MDTextField(
+        hint_text = "Weekly Goal (1-7)",
+        size_hint_y = None,
+        height = "40dp",
+        input_filter = "int"
+    )
+        content.add_widget(self.habit_title_field)
+        content.add_widget(self.habit_goal_field)
+
+       
+        
+        self.dialog = MDDialog(
+            title="Add Habit",
+            type="custom",
+            content_cls=content,
+            buttons=[
+                MDRaisedButton(text="Cancel", on_release=lambda x: self.dialog.dismiss()),
+                MDRaisedButton(text="Add", on_release=self.add_habit)
+            ]
+        )
+        self.dialog.open()
+
+    def add_habit(self, *args):
+        """
+        Handles adding a new habit from the dialog.
+
+        Calls TaskService to add the habit to the database,
+        dismisses the dialog, and refreshes the habit table in the UI.
+        """
+        title = self.habit_title_field.text
+        try:
+            goal = int(self.habit_goal_field.text)
+        except ValueError:
+            goal = 1
+        goal = max(1, min(goal, 7))
+        succes = self.task_services.add_habit(title, goal)
+        if succes:
+            self.dialog.dismiss()
+            self.refresh_habit()
+
+    def refresh_habits(self):
+        """Refreshes the habits table for the selected week."""
+        self.habit_table.clear_widgets()
+
+        if not self.selected_date:
+            return
+
+        week_start = self.get_week_start(self.selected_date)
+        habits = self.task_services.get_habits(week_start)
+
+        grid = GridLayout(cols=11, size_hint_y=None, spacing=5)
+        grid.bind(minimum_height=grid.setter("height"))
+
+        # Header
+        grid.add_widget(MDLabel(text="Habit", bold=True))
+        for i in range(7):
+            day = week_start + timedelta(days=i)
+            grid.add_widget(MDLabel(text=day.strftime("%a")[0], bold=True))
+        grid.add_widget(MDLabel(text="Goal", bold=True))
+        grid.add_widget(MDLabel(text="Done", bold=True))
+        grid.add_widget(MDLabel(text="Del", bold=True))
+
+        # Conținut tabel
+        for habit in habits:
+            print(f"Habit: {habit['title']}")
+            for day, value in habit['logs'].items():
+                print(f"  {day}: {value} (key type: {type(day)}, value type: {type(value)})")
+            achieved = len([v for v in habit["logs"].values() if v])
+            grid.add_widget(MDLabel(text=habit["title"]))
+
+            for i in range(7):
+                day = week_start + timedelta(days=i)
+                day_str = day.strftime("%Y-%m-%d")
+
+                def make_callback(habit_id, date_str, btn_color_ref):
+                    return lambda x: self.toggle_day_ui(habit_id, date_str, btn_color_ref)
+
+                btn = MDFlatButton(
+                md_bg_color=self.get_habit_color(habit, day_str)
+            )
+                btn.bind(on_release=make_callback(habit["id"], day_str, btn))
+
+                grid.add_widget(btn)
+
+            grid.add_widget(MDLabel(text=str(habit["weekly_goal"])))
+            grid.add_widget(MDLabel(text=str(achieved)))
+
+            def make_del_callback(habit_id):
+                return lambda x: self.delete_habit(habit_id)
+            
+            del_btn = MDIconButton(icon="delete", on_release=make_del_callback(habit["id"]))
+            grid.add_widget(del_btn)
+
+        self.habit_table.add_widget(grid)
+
+    def get_week_start(self, date_obj):
+        return date_obj - timedelta(days=date_obj.weekday())
+    
+    def get_habit_color(self, habit, day_str):
+        """Returnează culoarea pentru un habit într-o anumită zi."""
+        return [0.6, 0, 0.8, 1] if habit["logs"].get(day_str) else [1, 1, 1, 1]
+
+    
+    def toggle_day_ui(self, habit_id, day_str, btn):
+        """Toggle habit log in DB și schimbă culoarea imediat."""
+        self.task_services.toggle_day(habit_id, day_str)
+        week_start = self.get_week_start(self.selected_date)
+        habits = self.task_services.get_habits(week_start)
+        habit = next(h for h in habits if h["id"] == habit_id)
+        
+        # Folosește aceeași funcție pentru consistență
+        btn.md_bg_color = self.get_habit_color(habit, day_str)
+
 
     def go_back(self):
         """
@@ -198,6 +366,12 @@ class TodoScreen(MDScreen):
         app = MDApp.get_running_app()
         app.sm.transition = SlideTransition(direction='right')
         app.sm.current = "start"
+
+
+
+
+
+    
 
 
 
