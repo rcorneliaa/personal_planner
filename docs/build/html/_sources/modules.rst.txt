@@ -1,11 +1,28 @@
-personal_planner
-================
+Modules
+=======
+
+Core Modules
+------------
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
-   db
-   main
+   core
    models
+
+UI Modules
+----------
+
+.. toctree::
+   :maxdepth: 2
+
    ui
-   utils
+
+Standalone Scripts
+------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   desktop_main
+   web_main

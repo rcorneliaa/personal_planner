@@ -1,6 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { TrashIcon } from "@heroicons/react/24/solid";
 
+/**
+ * TodoPage component
+ *
+ * Main page for managing tasks and weekly habits.
+ * Communicates with the FastAPI backend.
+ *
+ * Features:
+ * - Add / delete / complete tasks
+ * - Select date for tasks
+ * - Track weekly habits
+ * - Toggle habit completion per day
+ *
+ * Backend endpoints used:
+ * - GET /tasks
+ * - POST /tasks
+ * - DELETE /tasks/{id}
+ * - PUT /tasks/{id}
+ * - GET /habits
+ * - POST /habits
+ * - DELETE /habits/{id}
+ * - PUT /habits/{id}
+ */
+
 function TodoPage() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
@@ -9,13 +32,26 @@ function TodoPage() {
   const [newHabit, setNewHabit] = useState("");
   const [weeklyGoal, setWeeklyGoal] = useState(0);
 
-  // ================= HELPERS =================
+/**
+ * Formats a Date object into YYYY-MM-DD string
+ * used by the backend API.
+ *
+ * param {Date} date
+ * returns {string}
+ */
   function formatDateLocal(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   }
+
+/**
+ * Calculates the Monday of the week for a given date.
+ *
+ * param {string} dateStr
+ * returns {string}
+ */
 
   function getWeekStart(dateStr) {
     const date = new Date(dateStr);
@@ -25,6 +61,12 @@ function TodoPage() {
     monday.setDate(diff);
     return formatDateLocal(monday);
   }
+
+/**
+ * Generates the 7 days of the current week.
+ *
+ * returns {Array}
+ */
 
   function getWeekDays() {
     const start = new Date(weekStart);
@@ -51,6 +93,9 @@ function TodoPage() {
       .then((data) => setTasks(data));
   }, [selectedDate]);
 
+/**
+ * Sends a request to create a new task.
+ */
   const addTask = () => {
     fetch("http://127.0.0.1:8000/tasks", {
       method: "POST",
@@ -64,6 +109,11 @@ function TodoPage() {
       });
   };
 
+ /**
+ * Deletes a task from the backend and updates UI.
+ *
+ * param {number} taskId
+ */
   const deleteTask = (taskId) => {
     fetch(`http://127.0.0.1:8000/tasks/${taskId}`, { method: "DELETE" }).then(
       () => setTasks(tasks.filter((task) => task.id !== taskId))
@@ -114,6 +164,13 @@ function TodoPage() {
     );
   };
 
+
+/**
+ * Toggles habit completion for a specific day.
+ *
+ * param {number} habitId
+ * param {string} dayStr
+ */
   const toggleDay = (habitId, dayStr) => {
     // optimistic UI
     setHabits((prev) =>

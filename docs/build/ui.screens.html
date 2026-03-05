@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>ui.screens package &#8212; Personal Planner 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="main module" href="desktop_main.html" />
+    <link rel="prev" title="ui.components package" href="ui.components.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="ui-screens-package">
+<h1>ui.screens package<a class="headerlink" href="#ui-screens-package" title="Link to this heading">¶</a></h1>
+<section id="module-ui.screens.main_window">
+<span id="ui-screens-main-window-module"></span><h2>ui.screens.main_window module<a class="headerlink" href="#module-ui.screens.main_window" title="Link to this heading">¶</a></h2>
+<p>Start screen of the Personal Planner application.</p>
+<p>This module defines the initial UI screen that allows users
+to navigate to the To-Do Lists and Vacation Planner sections.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.screens.main_window.StartScreen">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ui.screens.main_window.</span></span><span class="sig-name descname"><span class="pre">StartScreen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/main_window.html#StartScreen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.main_window.StartScreen" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MDScreen</span></code></p>
+<p>Main start screen of the application.</p>
+<p>Displays the application title, logo, and navigation buttons
+for accessing the To-Do Lists and Vacation Planner screens.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.main_window.StartScreen.go_to_todo">
+<span class="sig-name descname"><span class="pre">go_to_todo</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/main_window.html#StartScreen.go_to_todo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.main_window.StartScreen.go_to_todo" title="Link to this definition">¶</a></dt>
+<dd><p>Navigates to the To-Do Lists screen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>instance</strong> – Button instance that triggered the navigation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.main_window.StartScreen.go_vacations">
+<span class="sig-name descname"><span class="pre">go_vacations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/main_window.html#StartScreen.go_vacations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.main_window.StartScreen.go_vacations" title="Link to this definition">¶</a></dt>
+<dd><p>Navigates to the Vacation Planner screen.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>instance</strong> – Button instance that triggered the navigation</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ui.screens.todo_ui">
+<span id="ui-screens-todo-ui-module"></span><h2>ui.screens.todo_ui module<a class="headerlink" href="#module-ui.screens.todo_ui" title="Link to this heading">¶</a></h2>
+<p>To-Do List screen of the Personal Planner application.</p>
+<p>This module defines the UI and logic for managing daily to-do tasks,
+including date selection, task creation, status updates, and navigation.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ui.screens.todo_ui.</span></span><span class="sig-name descname"><span class="pre">TodoScreen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_services</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MDScreen</span></code></p>
+<p>Screen for managing to-do tasks.</p>
+<p>Allows users to select a date, view tasks for that day,
+add new tasks, and mark tasks as completed or in progress.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.add_habit">
+<span class="sig-name descname"><span class="pre">add_habit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.add_habit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.add_habit" title="Link to this definition">¶</a></dt>
+<dd><p>Handles adding a new habit from the dialog.</p>
+<p>Calls TaskService to add the habit to the database,
+dismisses the dialog, and refreshes the habit table in the UI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.add_task">
+<span class="sig-name descname"><span class="pre">add_task</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.add_task"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.add_task" title="Link to this definition">¶</a></dt>
+<dd><p>Handles adding a new task from the dialog.</p>
+<p>Calls TaskService to add the task to the database,
+dismisses the dialog, and refreshes the task list in the UI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.get_habit_color">
+<span class="sig-name descname"><span class="pre">get_habit_color</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">habit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day_str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.get_habit_color"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.get_habit_color" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.get_week_start">
+<span class="sig-name descname"><span class="pre">get_week_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date_obj</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.get_week_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.get_week_start" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.go_back">
+<span class="sig-name descname"><span class="pre">go_back</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.go_back"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.go_back" title="Link to this definition">¶</a></dt>
+<dd><p>Navigates back to the start screen.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.mark_task_done">
+<span class="sig-name descname"><span class="pre">mark_task_done</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.mark_task_done"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.mark_task_done" title="Link to this definition">¶</a></dt>
+<dd><p>Updates task status via TaskService and refreshes UI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task_id</strong> – ID of the task</p></li>
+<li><p><strong>value</strong> – True if task is completed</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.on_date_selected">
+<span class="sig-name descname"><span class="pre">on_date_selected</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_range</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.on_date_selected"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.on_date_selected" title="Link to this definition">¶</a></dt>
+<dd><p>Handles the selected date from the date picker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instance</strong> – Date picker instance</p></li>
+<li><p><strong>value</strong> – Selected date</p></li>
+<li><p><strong>date_range</strong> – Optional date range (unused)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.refresh_habits">
+<span class="sig-name descname"><span class="pre">refresh_habits</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.refresh_habits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.refresh_habits" title="Link to this definition">¶</a></dt>
+<dd><p>Refreshes the habits table for the selected week.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.refresh_tasks">
+<span class="sig-name descname"><span class="pre">refresh_tasks</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.refresh_tasks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.refresh_tasks" title="Link to this definition">¶</a></dt>
+<dd><p>Refreshes the task list for the selected date.</p>
+<p>Fetches tasks from TaskService and updates the display.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.show_add_habit_dialog">
+<span class="sig-name descname"><span class="pre">show_add_habit_dialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.show_add_habit_dialog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.show_add_habit_dialog" title="Link to this definition">¶</a></dt>
+<dd><p>Displays a dialog for adding a new habit.</p>
+<p>Requires a date to be selected before allowing habit creation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.show_add_task_dialog">
+<span class="sig-name descname"><span class="pre">show_add_task_dialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.show_add_task_dialog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.show_add_task_dialog" title="Link to this definition">¶</a></dt>
+<dd><p>Displays a dialog for adding a new task.</p>
+<p>Requires a date to be selected before allowing task creation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.show_date_picker">
+<span class="sig-name descname"><span class="pre">show_date_picker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.show_date_picker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.show_date_picker" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a date picker dialog.</p>
+<p>Allows the user to select the day for which tasks will be displayed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.todo_ui.TodoScreen.toggle_day_ui">
+<span class="sig-name descname"><span class="pre">toggle_day_ui</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">habit_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">day_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">btn</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/todo_ui.html#TodoScreen.toggle_day_ui"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.todo_ui.TodoScreen.toggle_day_ui" title="Link to this definition">¶</a></dt>
+<dd><p>Toggle habit log in DB și schimbă culoarea imediat.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ui.screens.vacation_details_ui">
+<span id="ui-screens-vacation-details-ui-module"></span><h2>ui.screens.vacation_details_ui module<a class="headerlink" href="#module-ui.screens.vacation_details_ui" title="Link to this heading">¶</a></h2>
+<p>Vacation detail screen of the Personal Planner application.</p>
+<p>This module defines the UI and logic for displaying and managing
+daily itineraries within a selected vacation, including activities
+per day and time-based scheduling.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ui.screens.vacation_details_ui.</span></span><span class="sig-name descname"><span class="pre">VacationDetailScreen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">activities_services</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MDScreen</span></code></p>
+<p>Screen displaying detailed vacation itinerary.</p>
+<p>Allows navigation between vacation days and management of
+daily activities, including time selection and notes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.add_activity">
+<span class="sig-name descname"><span class="pre">add_activity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.add_activity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.add_activity" title="Link to this definition">¶</a></dt>
+<dd><p>Saves a new activity to the database
+and refreshes the current day view.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.go_back">
+<span class="sig-name descname"><span class="pre">go_back</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.go_back"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.go_back" title="Link to this definition">¶</a></dt>
+<dd><p>Navigates back to the vacations screen.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.handle_delete_activity">
+<span class="sig-name descname"><span class="pre">handle_delete_activity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">activity_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">card</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.handle_delete_activity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.handle_delete_activity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.handle_edit_activity">
+<span class="sig-name descname"><span class="pre">handle_edit_activity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">activity</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.handle_edit_activity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.handle_edit_activity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.set_end_time">
+<span class="sig-name descname"><span class="pre">set_end_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.set_end_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.set_end_time" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the selected end time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> – Selected time</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.set_start_time">
+<span class="sig-name descname"><span class="pre">set_start_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.set_start_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.set_start_time" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the selected start time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> – Selected time</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.set_vacation">
+<span class="sig-name descname"><span class="pre">set_vacation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vacation</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.set_vacation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.set_vacation" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the selected vacation and initializes day navigation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>vacation</strong> – Vacation object containing start/end dates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.show_day_details">
+<span class="sig-name descname"><span class="pre">show_day_details</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">day</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.show_day_details"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.show_day_details" title="Link to this definition">¶</a></dt>
+<dd><p>Displays activities for a specific vacation day.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>day</strong> – Day number within the vacation</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.show_details_dialog">
+<span class="sig-name descname"><span class="pre">show_details_dialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">edit_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.show_details_dialog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.show_details_dialog" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a dialog for adding a new activity.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.show_end_time_picker">
+<span class="sig-name descname"><span class="pre">show_end_time_picker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.show_end_time_picker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.show_end_time_picker" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a time picker for selecting activity end time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.show_start_time_picker">
+<span class="sig-name descname"><span class="pre">show_start_time_picker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.show_start_time_picker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.show_start_time_picker" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a time picker for selecting activity start time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_details_ui.VacationDetailScreen.update_activity">
+<span class="sig-name descname"><span class="pre">update_activity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">activity</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_details_ui.html#VacationDetailScreen.update_activity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_details_ui.VacationDetailScreen.update_activity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ui.screens.vacation_ui">
+<span id="ui-screens-vacation-ui-module"></span><h2>ui.screens.vacation_ui module<a class="headerlink" href="#module-ui.screens.vacation_ui" title="Link to this heading">¶</a></h2>
+<p>Vacations screen of the Personal Planner application.</p>
+<p>This module defines the UI and logic for managing vacations,
+including date selection, destination selection, and displaying
+saved vacation plans.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">ui.screens.vacation_ui.</span></span><span class="sig-name descname"><span class="pre">VacationsScreen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vacation_services</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MDScreen</span></code></p>
+<p>Screen for managing vacation plans.</p>
+<p>Allows users to add new vacations by selecting dates and destinations
+and displays existing vacations as cards with images and details.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.add_vacation">
+<span class="sig-name descname"><span class="pre">add_vacation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.add_vacation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.add_vacation" title="Link to this definition">¶</a></dt>
+<dd><p>Saves a new vacation to the database.</p>
+<p>Validates that all required details are selected
+before persisting the vacation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.go_back">
+<span class="sig-name descname"><span class="pre">go_back</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.go_back"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.go_back" title="Link to this definition">¶</a></dt>
+<dd><p>Navigates back to the start screen.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.open_city_menu">
+<span class="sig-name descname"><span class="pre">open_city_menu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.open_city_menu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.open_city_menu" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a dropdown menu for selecting a city.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>country</strong> – Selected country</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.open_country_menu">
+<span class="sig-name descname"><span class="pre">open_country_menu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.open_country_menu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.open_country_menu" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a dropdown menu for selecting a country.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.refresh_vacations">
+<span class="sig-name descname"><span class="pre">refresh_vacations</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.refresh_vacations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.refresh_vacations" title="Link to this definition">¶</a></dt>
+<dd><p>Refreshes the list of vacations displayed on screen.</p>
+<p>Retrieves vacations from the database and displays
+them as cards with images and destination labels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.select_city">
+<span class="sig-name descname"><span class="pre">select_city</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">city</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.select_city"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.select_city" title="Link to this definition">¶</a></dt>
+<dd><p>Stores the selected city and updates the UI.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>city</strong> – Selected city name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.select_country">
+<span class="sig-name descname"><span class="pre">select_country</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">country</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.select_country"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.select_country" title="Link to this definition">¶</a></dt>
+<dd><p>Stores the selected country and opens the city menu.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>country</strong> – Selected country name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.set_end_date">
+<span class="sig-name descname"><span class="pre">set_end_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_range</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.set_end_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.set_end_date" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the selected end date and validates it.</p>
+<p>Ensures that the end date is after the start date.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.set_start_date">
+<span class="sig-name descname"><span class="pre">set_start_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_range</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.set_start_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.set_start_date" title="Link to this definition">¶</a></dt>
+<dd><p>Sets the selected start date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>instance</strong> – Date picker instance</p></li>
+<li><p><strong>value</strong> – Selected start date</p></li>
+<li><p><strong>data_range</strong> – Optional date range (unused)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.show_details_dialog">
+<span class="sig-name descname"><span class="pre">show_details_dialog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.show_details_dialog"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.show_details_dialog" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a dialog for entering vacation details.</p>
+<p>The user can select start date, end date, and destination.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.show_end_date_picker">
+<span class="sig-name descname"><span class="pre">show_end_date_picker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.show_end_date_picker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.show_end_date_picker" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a date picker for selecting the vacation end date.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ui.screens.vacation_ui.VacationsScreen.show_start_date_picker">
+<span class="sig-name descname"><span class="pre">show_start_date_picker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">instance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ui/screens/vacation_ui.html#VacationsScreen.show_start_date_picker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ui.screens.vacation_ui.VacationsScreen.show_start_date_picker" title="Link to this definition">¶</a></dt>
+<dd><p>Opens a date picker for selecting the vacation start date.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Personal Planner</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="modules.html#core-modules">Core Modules</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html#ui-modules">UI Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#standalone-scripts">Standalone Scripts</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">Modules</a><ul>
+  <li><a href="ui.html">ui package</a><ul>
+      <li>Previous: <a href="ui.components.html" title="previous chapter">ui.components package</a></li>
+      <li>Next: <a href="desktop_main.html" title="next chapter">main module</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Cornelia Rusu.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/ui.screens.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

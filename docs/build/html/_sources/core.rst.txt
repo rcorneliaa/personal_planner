@@ -1,0 +1,13 @@
+core package
+============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   core.db
+   core.services
+
+

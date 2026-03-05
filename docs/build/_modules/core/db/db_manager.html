@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>core.db.db_manager &#8212; Personal Planner 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for core.db.db_manager</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">date</span><span class="p">,</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timedelta</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psycopg2</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">psycopg2.extras</span><span class="w"> </span><span class="kn">import</span> <span class="n">RealDictCursor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dotenv</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models.task</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models.vacation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vacation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">models.vacation</span><span class="w"> </span><span class="kn">import</span> <span class="n">Itinerary</span>
+
+<span class="n">load_dotenv</span><span class="p">()</span> 
+
+<div class="viewcode-block" id="DatabaseManager">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DatabaseManager</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Handles all database operations for the Personal Planner application.</span>
+
+<span class="sd">    This includes management of tasks, habits, vacations, and itineraries.</span>
+<span class="sd">    Provides CRUD operations and utility methods for database interactions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_url</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the database connection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db_url (str, optional): PostgreSQL database URL. If None, defaults</span>
+<span class="sd">                to environment variable &#39;DATABASE_URL&#39; or &#39;postgresql://localhost:6543/postgres&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">db_url</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">db_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;DATABASE_URL&quot;</span><span class="p">,</span> <span class="s2">&quot;postgresql://localhost:6543/postgres&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">psycopg2</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">db_url</span><span class="p">)</span>
+        
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_execute_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fetch_one</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fetch_all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dict_cursor</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Executes a SQL query with optional fetch and error handling.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query (str): SQL query string.</span>
+<span class="sd">            params (tuple, optional): Parameters for the query.</span>
+<span class="sd">            fetch_one (bool, optional): If True, fetches a single row.</span>
+<span class="sd">            fetch_all (bool, optional): If True, fetches all rows.</span>
+<span class="sd">            dict_cursor (bool, optional): If True, uses RealDictCursor for dict results.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict] | dict | None: Query result based on fetch options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            
+            <span class="k">if</span> <span class="n">dict_cursor</span><span class="p">:</span>
+                <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">(</span><span class="n">cursor_factory</span><span class="o">=</span><span class="n">RealDictCursor</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            
+           
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">params</span> <span class="ow">or</span> <span class="p">())</span>
+            
+            <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">fetch_one</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">fetch_all</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+            
+        
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            
+            <span class="k">return</span> <span class="n">result</span>
+            
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eroare SQL: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Query: </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Params: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">e</span>
+            
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cursor</span><span class="p">:</span>
+                <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DatabaseManager.initialize_database">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.initialize_database">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">initialize_database</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates all required database tables if they do not exist.</span>
+
+<span class="sd">        Tables created:</span>
+<span class="sd">            - tasks</span>
+<span class="sd">            - habits</span>
+<span class="sd">            - habit_logs</span>
+<span class="sd">            - vacations</span>
+<span class="sd">            - itineraries</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS tasks(</span>
+<span class="s2">                id SERIAL PRIMARY KEY,</span>
+<span class="s2">                title TEXT NOT NULL,</span>
+<span class="s2">                date TEXT NOT NULL,</span>
+<span class="s2">                status TEXT DEFAULT &#39;in progress&#39;</span>
+<span class="s2">            )</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS habits(</span>
+<span class="s2">                id SERIAL PRIMARY KEY,</span>
+<span class="s2">                title TEXT NOT NULL,</span>
+<span class="s2">                goal INTEGER</span>
+<span class="s2">            )</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS habit_logs(</span>
+<span class="s2">                id SERIAL PRIMARY KEY,</span>
+<span class="s2">                habit_id INTEGER REFERENCES habits(id) ON DELETE CASCADE,</span>
+<span class="s2">                log_date DATE NOT NULL,</span>
+<span class="s2">                status BOOLEAN DEFAULT false,</span>
+<span class="s2">                UNIQUE (habit_id, log_date)</span>
+<span class="s2">            )</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS vacations(</span>
+<span class="s2">                id SERIAL PRIMARY KEY,</span>
+<span class="s2">                destination TEXT NOT NULL,</span>
+<span class="s2">                start_date TEXT NOT NULL,</span>
+<span class="s2">                end_date TEXT NOT NULL</span>
+<span class="s2">            )</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS itineraries(</span>
+<span class="s2">                id SERIAL PRIMARY KEY,</span>
+<span class="s2">                vacation_id INTEGER REFERENCES vacations(id) ON DELETE CASCADE,</span>
+<span class="s2">                day DATE,</span>
+<span class="s2">                start_time TIME,</span>
+<span class="s2">                end_time TIME,     </span>
+<span class="s2">                activity TEXT,</span>
+<span class="s2">                location TEXT,</span>
+<span class="s2">                notest TEXT NULL</span>
+<span class="s2">            )</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">)</span>
+    
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">                ALTER TABLE tasks</span>
+<span class="s2">                ALTER COLUMN date TYPE DATE</span>
+<span class="s2">                USING date::DATE</span>
+<span class="s2">            &quot;&quot;&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>  </div>
+
+
+    <span class="c1"># ============================= TASK MANAGEMENT =============================</span>
+
+<div class="viewcode-block" id="DatabaseManager.add_task">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.add_task">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a new task to the database.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            title (str): Task title.</span>
+<span class="sd">            date (str | datetime.date): Task date.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;INSERT INTO tasks (title, date) VALUES(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">date</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.get_tasks_by_date">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.get_tasks_by_date">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_tasks_by_date</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves tasks for a specific date.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            date (str | datetime.date): Date for which to retrieve tasks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[Task]: List of Task objects for the specified date.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">date</span><span class="p">:</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+                <span class="s2">&quot;SELECT * FROM tasks WHERE date = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">date</span><span class="p">,),</span>
+                <span class="n">fetch_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">dict_cursor</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+                <span class="s2">&quot;SELECT * FROM tasks&quot;</span><span class="p">,</span>
+                <span class="n">fetch_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">dict_cursor</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">[</span><span class="n">Task</span><span class="p">(</span><span class="o">**</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.mark_task_done">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.mark_task_done">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mark_task_done</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Marks a task as completed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;UPDATE tasks SET status = &#39;done&#39; WHERE id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">task_id</span><span class="p">,)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.delete_task">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.delete_task">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_task</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes a task.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;DELETE FROM tasks WHERE id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">task_id</span><span class="p">,)</span>
+        <span class="p">)</span></div>
+
+
+    <span class="c1"># ============================= HABITS MANAGEMENT =============================</span>
+
+<div class="viewcode-block" id="DatabaseManager.add_habit">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.add_habit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_habit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a new habit.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            title (str): Habit title.</span>
+<span class="sd">            goal (int): Weekly goal (1-7).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;INSERT INTO habits(title, goal) VALUES(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">goal</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.delete_habit">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.delete_habit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_habit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">habit_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Marks a habit as inactive (soft delete).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;UPDATE habits SET active = FALSE WHERE id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">habit_id</span><span class="p">,)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.get_weekly_habits">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.get_weekly_habits">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_weekly_habits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">week_start</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves all habits and their completion logs for a week.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            week_start (datetime.date): Start date of the week (Monday).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[dict]: List of habits with structure:</span>
+<span class="sd">                {</span>
+<span class="sd">                    &quot;id&quot;: int,</span>
+<span class="sd">                    &quot;title&quot;: str,</span>
+<span class="sd">                    &quot;weekly_goal&quot;: int,</span>
+<span class="sd">                    &quot;logs&quot;: dict[str, bool]</span>
+<span class="sd">                }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">week_end</span> <span class="o">=</span> <span class="n">week_start</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+        
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT h.id, h.title, h.goal as weekly_goal,</span>
+<span class="s2">                hl.log_date, hl.status</span>
+<span class="s2">            FROM habits h</span>
+<span class="s2">            LEFT JOIN habit_logs hl </span>
+<span class="s2">                ON h.id = hl.habit_id</span>
+<span class="s2">                AND hl.log_date BETWEEN </span><span class="si">%s</span><span class="s2"> AND </span><span class="si">%s</span>
+<span class="s2">                AND hl.status = TRUE  </span>
+<span class="s2">            WHERE h.active = TRUE </span>
+<span class="s2">            ORDER BY h.id, hl.log_date</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">week_start</span><span class="p">,</span> <span class="n">week_end</span><span class="p">),</span> <span class="n">fetch_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dict_cursor</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="n">habits_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+            <span class="n">hid</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">hid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">habits_dict</span><span class="p">:</span>
+                <span class="n">habits_dict</span><span class="p">[</span><span class="n">hid</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">hid</span><span class="p">,</span>
+                    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;weekly_goal&quot;</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;weekly_goal&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;logs&quot;</span><span class="p">:</span> <span class="nb">set</span><span class="p">()</span>  
+                <span class="p">}</span>
+            
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;log_date&quot;</span><span class="p">]:</span>  
+                <span class="n">log_day</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;log_date&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+                <span class="n">habits_dict</span><span class="p">[</span><span class="n">hid</span><span class="p">][</span><span class="s2">&quot;logs&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">log_day</span><span class="p">)</span>
+        
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">habit</span> <span class="ow">in</span> <span class="n">habits_dict</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">habit</span><span class="p">[</span><span class="s2">&quot;logs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">day</span><span class="p">:</span> <span class="kc">True</span> <span class="k">for</span> <span class="n">day</span> <span class="ow">in</span> <span class="n">habit</span><span class="p">[</span><span class="s2">&quot;logs&quot;</span><span class="p">]}</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">habit</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.toggle_day">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.toggle_day">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">toggle_day</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">habit_id</span><span class="p">,</span> <span class="n">day</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Toggles a habit log for a specific day.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;SELECT id FROM habit_logs WHERE habit_id = </span><span class="si">%s</span><span class="s2"> AND log_date = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">habit_id</span><span class="p">,</span> <span class="n">day</span><span class="p">),</span>
+            <span class="n">fetch_one</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+           
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+                <span class="s2">&quot;DELETE FROM habit_logs WHERE id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">],)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+           
+            <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+                <span class="s2">&quot;INSERT INTO habit_logs(habit_id, log_date, status) VALUES(</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, TRUE)&quot;</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">habit_id</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
+            <span class="p">)</span></div>
+
+
+    <span class="c1"># ============================= VACATION MANAGEMENT =============================</span>
+
+<div class="viewcode-block" id="DatabaseManager.add_vacation">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.add_vacation">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_vacation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a new vacation to the database.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            destination (str): Vacation destination.</span>
+<span class="sd">            start_date (str | datetime.date): Start date.</span>
+<span class="sd">            end_date (str | datetime.date): End date.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;INSERT INTO vacations(destination, start_date, end_date) VALUES (</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">destination</span><span class="p">,</span> <span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.get_vacations">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.get_vacations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_vacations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves all vacations from the database.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[Vacation]: List of Vacation objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;SELECT * FROM vacations&quot;</span><span class="p">,</span>
+            <span class="n">fetch_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">dict_cursor</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">[</span><span class="n">Vacation</span><span class="p">(</span><span class="o">**</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="p">[]</span></div>
+
+
+    <span class="c1"># ============================= ITINERARY MANAGEMENT =============================</span>
+
+<div class="viewcode-block" id="DatabaseManager.add_activity">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.add_activity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vacation_id</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">notest</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds an activity to a vacation itinerary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            vacation_id (int): Vacation ID.</span>
+<span class="sd">            day (str | datetime.date): Day of the activity.</span>
+<span class="sd">            start_time (str | datetime.time): Start time.</span>
+<span class="sd">            end_time (str | datetime.time): End time.</span>
+<span class="sd">            activity (str): Activity description.</span>
+<span class="sd">            location (str, optional): Activity location.</span>
+<span class="sd">            notest (str, optional): Notes for the activity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            INSERT INTO itineraries(vacation_id, day, start_time, end_time, activity, location, notest) </span>
+<span class="s2">            VALUES (</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">)</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">vacation_id</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">notest</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.get_activities">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.get_activities">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_activities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vacation_id</span><span class="p">,</span> <span class="n">day</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Retrieves activities for a specific vacation day.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            vacation_id (int): Vacation ID.</span>
+<span class="sd">            day (str | datetime.date): Day to retrieve activities for.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[Itinerary]: List of Itinerary objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rows</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            SELECT id, vacation_id, day, start_time, end_time, activity, location, notest </span>
+<span class="s2">            FROM itineraries </span>
+<span class="s2">            WHERE vacation_id = </span><span class="si">%s</span><span class="s2"> AND day = </span><span class="si">%s</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">vacation_id</span><span class="p">,</span> <span class="n">day</span><span class="p">),</span> <span class="n">fetch_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dict_cursor</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="p">[</span><span class="n">Itinerary</span><span class="p">(</span><span class="o">**</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">]</span> <span class="k">if</span> <span class="n">rows</span> <span class="k">else</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.delete_activity">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.delete_activity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">activity_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deletes an activity from the itinerary.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span>
+            <span class="s2">&quot;DELETE FROM itineraries WHERE id = </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">activity_id</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.update_activity">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.update_activity">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">activity_id</span><span class="p">,</span> <span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">notest</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates an existing activity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_execute_query</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">            UPDATE itineraries</span>
+<span class="s2">            SET start_time = </span><span class="si">%s</span><span class="s2">, end_time = </span><span class="si">%s</span><span class="s2">, activity = </span><span class="si">%s</span><span class="s2">, location = </span><span class="si">%s</span><span class="s2">, notest = </span><span class="si">%s</span>
+<span class="s2">            WHERE id = </span><span class="si">%s</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">start_time</span><span class="p">,</span> <span class="n">end_time</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">notest</span><span class="p">,</span> <span class="n">activity_id</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DatabaseManager.close">
+<a class="viewcode-back" href="../../../core.db.html#core.db.db_manager.DatabaseManager.close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Closes the database connection.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</div>
+
+
+    
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Personal Planner</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Modules:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">Modules</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Cornelia Rusu.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

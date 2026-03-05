@@ -307,11 +307,8 @@ class TodoScreen(MDScreen):
         grid.add_widget(MDLabel(text="Done", bold=True))
         grid.add_widget(MDLabel(text="Del", bold=True))
 
-        # Conținut tabel
+      
         for habit in habits:
-            print(f"Habit: {habit['title']}")
-            for day, value in habit['logs'].items():
-                print(f"  {day}: {value} (key type: {type(day)}, value type: {type(value)})")
             achieved = len([v for v in habit["logs"].values() if v])
             grid.add_widget(MDLabel(text=habit["title"]))
 
@@ -344,7 +341,7 @@ class TodoScreen(MDScreen):
         return date_obj - timedelta(days=date_obj.weekday())
     
     def get_habit_color(self, habit, day_str):
-        """Returnează culoarea pentru un habit într-o anumită zi."""
+       
         return [0.6, 0, 0.8, 1] if habit["logs"].get(day_str) else [1, 1, 1, 1]
 
     

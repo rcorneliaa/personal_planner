@@ -1,16 +1,43 @@
-.. Personal Planer documentation master file, created by
-   sphinx-quickstart on Thu Jan 22 15:39:47 2026.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Personal Planner
+================
 
-Personal Planer documentation
-=============================
+Personal Planner is a cross-platform application for managing tasks, habits, and vacations.
 
-Welcome to the Personal Planner documentation.
+Overview
+--------
+
+Personal Planner allows users to:
+
+* Manage daily tasks
+* Track weekly habits
+* Plan vacations and trips (Desktop only)
+* Select specific dates for planning
+* Use a modern UI built with KivyMD
+
+Platforms
+---------
+
+Desktop Application
+~~~~~~~~~~~~~~~~~~~
+* Full-featured with To-Do, Habits, and Vacation Planning modules
+* Runs natively using KivyMD
+
+Web Application
+~~~~~~~~~~~~~~~
+* Includes To-Do and Habits modules
+* Shared service layer ensures consistent logic across platforms
+
+Architecture
+------------
+
+The application follows a layered architecture:
+
+* **UI Layer** – Screens and widgets (KivyMD)
+* **Service Layer** – Business logic (TaskServices, VacationServices)
+* **Data Layer** – Storage and persistence
 
 .. toctree::
    :maxdepth: 2
    :caption: Modules:
 
    modules
-

@@ -1,0 +1,12 @@
+core.db package
+===============
+
+
+core.db.db\_manager module
+--------------------------
+
+.. automodule:: core.db.db_manager
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
