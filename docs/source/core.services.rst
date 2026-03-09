@@ -1,9 +1,6 @@
 core.services package
 =====================
 
-Submodules
-----------
-
 core.services.activity\_services module
 ---------------------------------------
 

@@ -168,81 +168,88 @@ class VacationDetailScreen(MDScreen):
     def handle_edit_activity(self, activity):
         self.show_details_dialog(edit_mode=True, activity=activity)
 
-    
-    def update_activity(self, activity):
-        success, error = self.activities_services.update_activity(
-        activity_id=activity.id,
-        start_time=self.start_time.strftime("%H:%M"),
-        end_time=self.end_time.strftime("%H:%M"),
-        activity=self.activity.text,
-        location=self.location.text,
-        notest=self.notest.text,
-    )
-
-        if not success:
-            toast(error)
-            return
-
-        self.activity_dialog.dismiss()
-        self.show_day_details(self.current_day)
 
     def show_details_dialog(self, edit_mode = False, activity = None):
         """
         Opens a dialog for adding a new activity.
         """
-
-        
+        self.edit_mode = edit_mode
+        self.edit_activity = activity
 
         content = MDBoxLayout(
             orientation="vertical",
             spacing=20,
-            padding=(20, 60, 20, 20),  
+            padding=(20, 60, 20, 20),
             size_hint_y=None,
-            height=700,
-            width = 900
-            )
+            height=700
+        )
 
-        self.start_time_btn = MDRectangleFlatButton(text = "Choose start time..")
-        self.start_time_btn.bind(on_release = self.show_start_time_picker)
+        
+        self.start_time = None
+        self.end_time = None
+
+        
+        self.start_time_btn = MDRectangleFlatButton(text="Choose start time")
+        self.start_time_btn.bind(on_release=self.show_start_time_picker)
         content.add_widget(self.start_time_btn)
 
-        self.end_time_btn = MDRectangleFlatButton(text = "Choose end time..")
-        self.end_time_btn.bind(on_release = self.show_end_time_picker)
+       
+        self.end_time_btn = MDRectangleFlatButton(text="Choose end time")
+        self.end_time_btn.bind(on_release=self.show_end_time_picker)
         content.add_widget(self.end_time_btn)
 
-        self.activity = MDTextField(hint_text = "Activity", id = "activity")
+      
+        self.activity = MDTextField(hint_text="Activity")
         content.add_widget(self.activity)
 
-        self.location = MDTextField(hint_text = "Location", id = "location")
+        self.location = MDTextField(hint_text="Location")
         content.add_widget(self.location)
 
-        self.notest = MDTextField(hint_text = "Details", id = "notest")
+        self.notest = MDTextField(hint_text="Details")
         content.add_widget(self.notest)
 
+       
         if edit_mode and activity:
+
             self.activity.text = activity.activity
             self.location.text = activity.location or ""
             self.notest.text = activity.notest or ""
-            self.start_time = datetime.strptime(activity.start_time, "%H:%M").time()
-            self.end_time = datetime.strptime(activity.end_time, "%H:%M").time()
 
-        title = "Edit activity" if edit_mode else "Add activity"
-        button_text = "Save" if edit_mode else "Add"
-        button_action = (
-            lambda x: self.update_activity(activity)
-            if edit_mode
-            else self.add_activity
-        )
+            if isinstance(activity.start_time, str):
+                self.start_time = datetime.strptime(activity.start_time, "%H:%M").time()
+            else:
+                self.start_time = activity.start_time
+
+            if isinstance(activity.end_time, str):
+                self.end_time = datetime.strptime(activity.end_time, "%H:%M").time()
+            else:
+                self.end_time = activity.end_time
+
+            self.start_time_btn.text = f"Start time: {self.start_time.strftime('%H:%M')}"
+            self.end_time_btn.text = f"End time: {self.end_time.strftime('%H:%M')}"
+            title = "Edit activity"
+            button_text = "Save"
+
+        else:
+            title = "Add activity"
+            button_text = "Add"
+
         self.activity_dialog = MDDialog(
-            title = title,
-            type = "custom",
-            content_cls = content,
+            title=title,
+            type="custom",
+            content_cls=content,
             buttons=[
-                MDRaisedButton(text="Cancel", on_release=lambda x: self.activity_dialog.dismiss()),
-                MDRaisedButton(text=button_text, on_release=button_action)
+                MDRaisedButton(
+                    text="Cancel",
+                    on_release=lambda x: self.activity_dialog.dismiss()
+                ),
+                MDRaisedButton(
+                    text=button_text,
+                    on_release=self.save_activity
+                )
             ]
-
         )
+
         self.activity_dialog.open()
 
     def show_start_time_picker(self, instance):
@@ -279,28 +286,42 @@ class VacationDetailScreen(MDScreen):
         self.end_time = value
         self.end_time_btn.text =f"End time: {value.strftime("%H:%M")}" 
 
-    def add_activity(self, *args):
+    def save_activity(self, *args):
         """
         Saves a new activity to the database
         and refreshes the current day view.
         """
-        
-        day_number = self.current_day
-        day =  self.start_date + timedelta(days=day_number - 1)   
+        if not self.start_time or not self.end_time:
+            toast("Select start and end time")
+            return
 
-        success, error = self.activities_services.add_activity(
-        vacation_id=self.vacation.id,
-        day=day.isoformat(),
-        start_time=self.start_time.strftime("%H:%M"),
-        end_time=self.end_time.strftime("%H:%M"),
-        activity=self.activity.text,
-        location=self.location.text,
-        notest=self.notest.text,
-               
-    )   
+        day = self.start_date + timedelta(days=self.current_day - 1)
+
+        if self.edit_activity:
+            success, error = self.activities_services.update_activity(
+                activity_id=self.edit_activity.id,
+                start_time=self.start_time.strftime("%H:%M"),
+                end_time=self.end_time.strftime("%H:%M"),
+                activity=self.activity.text,
+                location=self.location.text,
+                notest=self.notest.text,
+            )
+
+        else:
+            success, error = self.activities_services.add_activity(
+                vacation_id=self.vacation.id,
+                day=day.isoformat(),
+                start_time=self.start_time.strftime("%H:%M"),
+                end_time=self.end_time.strftime("%H:%M"),
+                activity=self.activity.text,
+                location=self.location.text,
+                notest=self.notest.text,
+            )
+
         if not success:
             toast(error)
             return
+
         self.activity_dialog.dismiss()
         self.show_day_details(self.current_day)
 

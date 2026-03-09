@@ -41,10 +41,9 @@ class TodoScreen(MDScreen):
 
 
         
-        # Layout principal vertical
+   
         main_layout = MDBoxLayout(orientation='vertical', spacing=10, padding=10)
 
-        # Top bar
         top_bar = MDTopAppBar(
             title="To-Do List",
             left_action_items=[["arrow-left", lambda x: self.go_back()]],
@@ -52,10 +51,9 @@ class TodoScreen(MDScreen):
         )
         main_layout.add_widget(top_bar)
 
-        # ScrollView pentru tot conținutul
         scroll = MDScrollView()
         content = MDBoxLayout(orientation='vertical', size_hint_y=None, spacing=20)
-        content.bind(minimum_height=content.setter('height'))  # face layout-ul scrollabil
+        content.bind(minimum_height=content.setter('height')) 
 
         # ================= DATE SELECTION =================
         self.date_btn = MDRaisedButton(
@@ -70,11 +68,11 @@ class TodoScreen(MDScreen):
         # ================= TASKS =================
         self.task_list = MDBoxLayout(orientation='vertical', spacing=5, size_hint_y=None)
         self.task_list.bind(minimum_height=self.task_list.setter('height'))
-        content.add_widget(MDLabel(text="Tasks", halign="center", size_hint_y=None, height=40))
+        content.add_widget(MDLabel(text="Tasks", halign="center", size_hint_y=None, height=40, theme_text_color="Custom", text_color=(0.5, 0, 0.5, 1)))
         content.add_widget(self.task_list)
 
         # Buton adaugare task
-        self.add_task_btn = MDRaisedButton(text="Add Task", size_hint_y=None, height=40)
+        self.add_task_btn = MDRaisedButton(text="Add Task", size_hint_y=None, pos_hint={"center_x": 0.5}, height=40)
         self.add_task_btn.bind(on_release=self.show_add_task_dialog)
         content.add_widget(self.add_task_btn)
 
@@ -82,18 +80,19 @@ class TodoScreen(MDScreen):
         self.habits_title = MDLabel(
             text="Habits (Weekly)",
             halign="center",
-            theme_text_color="Primary",
+            theme_text_color="Custom",
+            text_color=(0.5, 0, 0.5, 1),
             size_hint_y=None,
             height="40dp"
         )
         content.add_widget(self.habits_title)
 
-        # Tabel habits (GridLayout pentru checkbox-uri și titluri)
+      
         self.habit_table = GridLayout(cols=9, size_hint_y=None, row_default_height=40, spacing=5)
         self.habit_table.bind(minimum_height=self.habit_table.setter('height'))
         content.add_widget(self.habit_table)
 
-        # Buton adaugare habit
+      
         self.add_habit_btn = MDRaisedButton(
             text="Add Habit",
             pos_hint={"center_x": 0.5},
@@ -103,14 +102,12 @@ class TodoScreen(MDScreen):
         )
         content.add_widget(self.add_habit_btn)
 
-        # Adaugam tot continutul scrollabil
+      
         scroll.add_widget(content)
         main_layout.add_widget(scroll)
 
-        # Adaugam layout-ul principal la ecran
+     
         self.add_widget(main_layout)
-
-        # Refresh initial
         self.refresh_tasks()
         self.refresh_habits()
 
@@ -136,7 +133,7 @@ class TodoScreen(MDScreen):
         :param date_range: Optional date range (unused)
         """
         self.selected_date = value
-        self.date_btn.text = f"Ziua: {self.selected_date}"
+        self.date_btn.text = f"{self.selected_date}"
         self.refresh_tasks()
         self.refresh_habits()
 
