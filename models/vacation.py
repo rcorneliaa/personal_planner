@@ -10,11 +10,12 @@ class Vacation:
         end_date (str | date): End date of the vacation
     """
 
-    def __init__(self, id,destination, start_date, end_date):
+    def __init__(self, id,destination, start_date, end_date, user_id):
         self.id = id
         self.destination = destination
         self.start_date = start_date
         self.end_date = end_date
+        self.user_id = user_id 
 
 
 class Itinerary:

@@ -9,7 +9,7 @@ class Task:
         status (str): Current status of the task (default: "in progres")
     """
      
-    def __init__(self, id, title, date, status ="in progres"):
+    def __init__(self, id, title, date, user_id, status ="in progres"):
         """
         Initializes a new task instance.
 
@@ -22,6 +22,7 @@ class Task:
         self.title = title
         self.date = date
         self.status = status
+        self.user_id = user_id
 
     
     def is_done(self):
