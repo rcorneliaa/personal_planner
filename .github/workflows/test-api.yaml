@@ -27,6 +27,8 @@ jobs:
           pip install pytest pytest-html requests
 
       - name: Start API server
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           docker run -p 8000:8000 habit-tracker
           sleep 5
