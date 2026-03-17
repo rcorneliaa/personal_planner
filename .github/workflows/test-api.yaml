@@ -1,0 +1,43 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+
+jobs:
+  test:
+    run-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version "3.12"
+        
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-html requests
+
+      - name: Start API server
+        run: |
+          docker run -p 8000:8000 habit-tracker
+          sleep 5
+
+      - name: Run Tests
+        run: |
+          pytest TEST/ -v --html=report_api_test.html --self_contained-html
+
+      - name: Upload test report 
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-report
+          path: report_api_test.html
