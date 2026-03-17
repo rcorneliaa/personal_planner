@@ -30,12 +30,12 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          docker run -p 8000:8000 habit-tracker
-          sleep 5
+          docker run -d -p 8000:8000 --name habit-tracker-app habit-tracker
+          sleep 10
 
       - name: Run Tests
         run: |
-          pytest TEST/ -v --html=report_api_test.html --self_contained-html
+          pytest TEST/ -v --html=report_api_testing.html --self-contained-html
 
       - name: Upload test report 
         uses: actions/upload-artifact@v4
