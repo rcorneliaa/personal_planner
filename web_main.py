@@ -91,7 +91,7 @@ def mark_task_done(task_id):
         dict: Success message.
     """
     task_services.mark_task_done(task_id)
-    return {"massage": "Done!"}
+    return {"message": "Done!"}
 
 
 @app.get("/habits/")
